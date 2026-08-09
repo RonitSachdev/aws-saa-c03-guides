@@ -80,15 +80,25 @@ Any question asking for a "fully serverless web/API architecture" is assembling 
 ## Question patterns
 
 > *"Flash sale causes unpredictable spikes; table throttles"* → **On-Demand capacity mode** (pay-per-request absorbs spikes)
+
 > *"Reduce read latency to microseconds without changing application code"* → **DAX** (API-compatible cache, DynamoDB-only)
+
 > *"Global users need low-latency reads AND writes in every region"* → **Global Tables** (active-active; Aurora Global has only one writer)
+
 > *"Run custom logic whenever items are added or modified"* → **DynamoDB Streams + Lambda** (24-hour change feed triggers functions)
+
 > *"Automatically remove session records after 30 minutes, at no cost"* → **TTL** (free auto-delete, ~48h window)
+
 > *"Table keyed on user_id, but app must also query by email"* → **GSI** (new query attribute, addable anytime — LSI is creation-time-only bait)
+
 > *"Debit one account and credit another — both or neither"* → **DynamoDB Transactions** (ACID, 2x capacity cost)
+
 > *"Store 2 MB documents per record"* → **S3 for the object, DynamoDB holds the pointer** (400 KB item limit)
+
 > *"Application must always see the most recent write"* → **Strongly consistent read** (1 RCU vs 2 eventual reads)
+
 > *"Reporting needs joins across many tables"* → **RDS/Aurora**, not DynamoDB (relational = SQL)
+
 
 ## Pocket card
 
