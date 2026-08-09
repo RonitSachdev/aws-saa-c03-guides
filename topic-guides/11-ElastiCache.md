@@ -74,13 +74,21 @@ Three services all claim to "reduce database read load" — the scenario tells y
 ## Question patterns
 
 > *"Popular product pages generate thousands of identical reads that overload RDS"* → **ElastiCache** (repeated reads belong in memory)
+
 > *"Real-time gaming leaderboard with player rankings"* → **Redis sorted sets** (ranking is built in — free points)
+
 > *"Users get logged out when the Auto Scaling Group terminates instances"* → **store sessions in ElastiCache for Redis** (make the web tier stateless)
+
 > *"Cache must survive a node failure without data loss"* → **Redis** (replication + Multi-AZ failover; Memcached has neither)
+
 > *"Simplest cache, multithreaded, losing cached data is fine"* → **Memcached** (the only time it wins)
+
 > *"Cached prices must never be out of date"* → **write-through** (cache updated on every write; lazy loading can serve stale)
+
 > *"Long analytical/reporting queries slow the production database"* → **Read Replica**, not a cache (diverse queries never hit cache)
+
 > *"Speed up DynamoDB reads without modifying the application"* → **DAX** (ElastiCache would require code changes)
+
 > *"Publish/subscribe messaging between app components using the cache layer"* → **Redis** (pub/sub is Redis-only)
 
 ## Pocket card
