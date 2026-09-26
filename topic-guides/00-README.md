@@ -12,7 +12,7 @@
 ### 🏗️ Core infrastructure (heaviest-tested — do these first)
 | # | Guide | Owns the questions about |
 |---|---|---|
-| 06 | [VPC](06-VPC.md) | subnets, NAT, SG vs NACL, endpoints, peering/TGW/PrivateLink |
+| 01 | [VPC](06-VPC.md) | subnets, NAT, SG vs NACL, endpoints, peering/TGW/PrivateLink |
 | 02 | [S3](02-S3.md) | storage classes, encryption, Object Lock |
 | 03 | [EC2](03-EC2.md) | instance families, pricing options, placement groups |
 | 04 | [EBS, EFS & Instance Store](04-EBS-EFS-InstanceStore.md) | volume types, shared storage, ephemeral |
