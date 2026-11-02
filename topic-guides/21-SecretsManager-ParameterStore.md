@@ -15,7 +15,8 @@ Spell out the jargon: both are managed stores for configuration values and secre
 - Secrets up to **64KB**.
 - **Cross-account sharing** via resource policies — "share a secret with another AWS account" → Secrets Manager.
 - Encrypted with **KMS**, every access logged in **CloudTrail**.
-- Rotation happens **without downtime** — the app just fetches the current value at connect time.
+- Rotation happens **without downtime** — the app just fetches the current value at connect time. During rotation Secrets Manager keeps **multiple versions** tagged with staging labels (`AWSCURRENT`, `AWSPENDING`, `AWSPREVIOUS`); Parameter Store has no such rotation versioning.
+- It stores and rotates secrets — it does **not mint short-lived tokens** (that's STS/Cognito).
 
 ## Parameter Store (SSM Parameter Store) — free and hierarchical
 
@@ -25,7 +26,7 @@ Spell out the jargon: both are managed stores for configuration values and secre
 - **Advanced tier**: **8KB**, parameter **policies** (e.g., expiration notification), higher throughput — small fee.
 - **NO native rotation.** That's the dividing line.
 
-"Store application config / feature flags / license keys / AMI IDs" or "**cheapest** option" → **Parameter Store**.
+"Store application config / feature flags / license keys / AMI IDs" or "**cheapest** option" → **Parameter Store**. It's built for broad, mostly non-secret config — URLs, AMI IDs, instance IDs, DB connection strings, environment variables — plus SecureString for **secrets that change infrequently and don't need rotation** (cheaper than Secrets Manager when you have lots of static values).
 
 ## The comparison table (memorize this)
 
@@ -38,6 +39,15 @@ Spell out the jargon: both are managed stores for configuration values and secre
 | Cross-account sharing | **yes** | no (standard) |
 | KMS encryption | always | SecureString type |
 | Built for | secrets that must rotate | config + secrets that don't |
+
+**Widen the lens — the four "secret-ish" services the exam mixes up:**
+
+| Service | Use it for | Rotation / renewal | Stores passwords/API keys? |
+|---|---|---|---|
+| **Secrets Manager** | DB credentials, API keys, tokens | **Automatic rotation** | Yes |
+| **SSM Parameter Store** | App config, env vars, static secrets (SecureString) | No native rotation | Yes (SecureString) |
+| **KMS** | **Encryption keys** + encrypt/decrypt operations | Key rotation only | **No** — not a secret store |
+| **ACM** | Public/private **SSL/TLS certificates** for ALB, CloudFront, API Gateway | **Automatic certificate renewal** | No |
 
 ```
 "rotate automatically"? ──yes──▶ Secrets Manager
@@ -57,6 +67,8 @@ GetSecretValue / GetParameter (at runtime)
   ▼
 KMS decrypts transparently ──▶ app connects to DB
 ```
+
+**ECS injection specifics:** in the task definition, reference a Secrets Manager secret or Parameter Store parameter in the container definition's **`secrets`** parameter (→ injected as **environment variables**) or **`secretOptions`** (→ **log driver configuration**). Works on both **EC2 and Fargate** launch types; the **task execution role** needs permission to read the secret/parameter (and the KMS key).
 
 **THE trap:** any answer where credentials sit in code, an AMI, a config file in the repo, or a plain environment variable is wrong. The fix is **fetch at runtime via IAM role** — and if rotation is mentioned, Secrets Manager, so the password changes **without downtime** and the app never notices.
 
@@ -80,6 +92,14 @@ KMS decrypts transparently ──▶ app connects to DB
 
 > *"Audit who accessed the database secret."* → **Either service + CloudTrail** (all API access is logged).
 
+> *"Inject a DB password into ECS containers (EC2 or Fargate) as an environment variable."* → **`secrets` parameter in the container definition referencing Secrets Manager/Parameter Store** (`secretOptions` for log config).
+
+> *"Store many application parameters that change rarely and need no rotation, cost-effectively."* → **Parameter Store SecureString** (Secrets Manager is overkill and costs per secret).
+
+> *"Need SSL/TLS certificates with automatic renewal for an ALB."* → **ACM** (not Secrets Manager, not KMS).
+
+> *"Where should encryption keys be managed?"* → **KMS** — it manages keys, it does not store passwords.
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -94,5 +114,10 @@ KMS decrypts transparently ──▶ app connects to DB
 | Hardcoded password fix | Secrets Manager + IAM role runtime fetch |
 | Rotation without downtime | Secrets Manager |
 | $0.40/secret/month | Secrets Manager |
+| Many static params, no rotation, cheap | Parameter Store SecureString |
+| ECS env var from a secret | `secrets` in container definition |
+| ECS log driver secret | `secretOptions` |
+| Encryption keys (not secrets) | KMS |
+| SSL/TLS certs, auto-renew | ACM |
 
 Keys from Section 20 encrypt these secrets, CloudTrail from Section 19 audits every peek at them — the monitoring, key, and secret stories all click together, and that's exactly how the exam will test you.

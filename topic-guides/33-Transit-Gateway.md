@@ -22,6 +22,19 @@ Now do the math. Full connectivity between n VPCs needs **n(n-1)/2** peering con
 - **THE trap: TGW is the ONLY AWS service that supports IP multicast.** See the word "multicast" → answer is Transit Gateway, done.
 - **Appliance mode**: keeps both directions of a traffic flow going through the *same* network appliance (firewall/inspection VPC) — the keyword for centralized traffic inspection.
 
+### Transit VPC — the legacy DIY hub
+
+Before TGW, the pattern was a **transit VPC**: a hub VPC running **VPN appliances on EC2** that you build, patch and scale yourself, with spoke VPCs and data centers VPN-ing into it (it could span Regions). TGW is the **managed replacement** — one connection per VPC, on-prem network or remote office. If an option says "transit VPC", treat it as the **more-operational-overhead** distractor.
+
+**The connectivity chooser** (where hubs fit):
+
+| Need | Answer |
+|---|---|
+| Two VPCs, simple | VPC Peering (incl. inter-region) |
+| Many VPCs/accounts/Regions + on-prem, transitive | **Transit Gateway** (+ DX via transit VIF for cost/bandwidth) |
+| Branch offices talking to each other over VPN | VPN CloudHub (Section 32) |
+| Legacy self-managed hub | Transit VPC |
+
 ## Cost reality check
 
 TGW charges **per attachment per hour + per GB processed**. VPC peering has **no hourly charge** (just data transfer). So:
@@ -50,6 +63,8 @@ TGW charges **per attachment per hour + per GB processed**. VPC peering has **no
 
 > *"Connect hub networks in us-east-1 and eu-west-1"* → **TGW peering** (cross-region hub-to-hub)
 
+> *"Replace a transit VPC of EC2 VPN appliances with less operational overhead"* → **Transit Gateway**
+
 > *"All inter-VPC traffic must pass through a firewall appliance"* → **TGW with appliance mode** (symmetric flows through the inspection VPC)
 
 ## Pocket card
@@ -66,5 +81,7 @@ TGW charges **per attachment per hour + per GB processed**. VPC peering has **no
 | DX into TGW | Transit VIF |
 | Only 2–3 VPCs, cheapest | VPC peering |
 | Expose one service, no network merge | PrivateLink (not TGW) |
+| Self-managed EC2 VPN hub (legacy) | Transit VPC → replace with TGW |
+| Branch office ↔ branch office over VPN | VPN CloudHub (not TGW) |
 
 That's the plumbing done — next we zoom all the way out to how AWS wants you to *think* about architecture: the Well-Architected Framework.

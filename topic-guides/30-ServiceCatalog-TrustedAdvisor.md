@@ -24,7 +24,25 @@ THE trap (tested nuance): **the free tier of Trusted Advisor gives only a handfu
 
 Also worth one neuron each:
 - Trusted Advisor **recommends**; it doesn't fix. Pair it with EventBridge/CloudWatch for alerting on check status changes.
+- Trusted Advisor **can't define custom rules** — need your own compliance rule (e.g., "IAM password policy must require X" via the managed rule **`iam-password-policy`**)? → **AWS Config**.
+- The **Service Limits** check flags a quota once usage passes **80%**; Performance/Fault Tolerance checks also surface **over-utilized resources**.
 - Distinguish from neighbors: **Config** = "is this resource *compliant with my rules*?"; **Inspector** = software vulnerabilities on workloads; **Trusted Advisor** = broad best-practice checks across the five pillars, including cost and limits.
+
+**The governance look-alikes (the exam lines them up as options):**
+
+| Service | Primary purpose |
+|---|---|
+| **CloudTrail** | "**Who did what?**" — API auditing |
+| **AWS Config** | "**What changed, and is it compliant?**" — config tracking + custom rules |
+| **Trusted Advisor** | Best-practice **recommendations** (cost, security, limits...) |
+| **IAM credential report** | Status of IAM users' **credentials** |
+| **Control Tower** | **Landing zone** for a governed multi-account setup |
+| **Service Catalog** | Catalog of **approved products/templates** |
+| **Security Hub** | Aggregated **security findings** dashboard (doesn't prevent attacks) |
+| **RAM** | **Share resources** across accounts |
+| **Systems Manager OpsCenter** | Central place for **operational issues** (OpsItems) |
+| **Well-Architected Tool** | Reviews whether a **workload's architecture** follows best practices |
+| **Personal Health Dashboard** | AWS events affecting **your** resources (vs Service Health Dashboard = public, all customers) |
 
 ## Question patterns
 
@@ -40,6 +58,10 @@ Also worth one neuron each:
 
 > *"Central IT curates standard CloudFormation-based products for business units"* → **Service Catalog portfolios** (products live in portfolios, shared to users/accounts)
 
+> *"Continuously check that the IAM password policy meets company rules"* → **AWS Config rule** (`iam-password-policy`) — Trusted Advisor can't define custom rules
+
+> *"Is AWS EC2 having an outage affecting MY instances?"* → **AWS Health / Personal Health Dashboard** (Service Health Dashboard shows only public, general events)
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -51,5 +73,9 @@ Also worth one neuron each:
 | Open SGs, root MFA check | Trusted Advisor (Security) |
 | Full checks locked | Business/Enterprise support plan |
 | Five pillars | Cost, Performance, Security, Fault Tolerance, Service Limits |
+| Custom compliance rule (e.g., password policy) | AWS Config, not Trusted Advisor |
+| Service Limits alert threshold | 80% of quota |
+| Who did it? / What changed? / Recommendations? | CloudTrail / Config / Trusted Advisor |
+| Events affecting my resources | Personal Health Dashboard |
 
 Trusted Advisor tells you the bill *could* be smaller — the cost management tool zoo in the next section is how you actually see, alert on, and shrink it.

@@ -28,6 +28,15 @@ The SAA-C03 isn't trying to see if you've *heard* of services — it's checking 
 | "One NAT Gateway serves all AZs, highly available" | AZ failure kills it — deploy **one NAT Gateway per AZ** |
 | "SNS alone guarantees consumers never miss messages" | SNS doesn't persist for offline consumers — durable fan-out = **SNS → SQS** |
 | "Direct Connect is encrypted because it's private" | **Not encrypted** — run a **VPN over DX** for encryption |
+| "Auto Scaling absorbs a spike that lasts a few seconds" | New instances take **minutes** to boot, so ASG is **NOT suitable** for second-level bursts. Buffer the spike with **SQS**, or use Lambda. |
+| "Stretch one ASG/ELB across two Regions to cut latency" | ELB and ASG are **single-Region**. Use **Route 53** latency routing or **Global Accelerator** for multi-Region. |
+| "Multi-AZ will scale our reads" | Multi-AZ is for **HA/failover only**. Read scaling needs **Read Replicas** or Aurora Replicas. |
+| "Throttle clients at the load balancer" | ELB cannot throttle. **API Gateway** (usage plans/throttling) or **WAF rate-based rules** can. |
+| "CloudWatch alarm emails ops via SES" | Alarms notify through **SNS**. SES is for application, bulk or marketing email. |
+| "Order Direct Connect for a one-time bulk transfer next week" | DX takes **weeks to months** to set up. One-time bulk transfer → **Snowball** or **DataSync** over the internet/VPN. |
+| "Firewall Manager / Security Hub / Trusted Advisor will block the attack" | These only **manage, aggregate or advise**. Blocking is done by **WAF, Shield, NACL or Network Firewall**. |
+| "Attach a security group to the S3 bucket" | S3 has no security groups. Control access with **bucket policies**, **VPC endpoint policies** or Block Public Access. |
+| "Run session state or OLTP on Redshift" | Redshift is an **OLAP** warehouse. Use **DynamoDB or ElastiCache** for sessions and **RDS/Aurora** for OLTP. |
 
 ## Must-know combos (the exam's favorite Lego sets)
 
@@ -42,6 +51,42 @@ The SAA-C03 isn't trying to see if you've *heard* of services — it's checking 
 | Migration toolkit | **DataSync (files) + DMS (databases) + DX/Snow family (transport)** |
 | DR stack | **Route 53 failover + Aurora Global + S3 CRR** |
 | App authentication | **Cognito User Pools (login) + Identity Pools (AWS credentials)** |
+| Classic 3-tier web app | **Web tier**: ALB in **public** subnets with an ASG behind it. **App tier**: EC2/containers in **private** subnets. **DB tier**: RDS Multi-AZ in **private** subnets. Only the load balancer faces the internet. |
+
+### Design keyword → architectural goal
+
+| Keyword in the stem | What AWS wants to see |
+|---|---|
+| **Highly available** | Multi-AZ, redundancy, automatic failover (ASG across AZs, RDS Multi-AZ, one NAT GW per AZ) |
+| **Fault tolerant / survive a Region failure** | Multi-Region (Route 53 failover, Aurora Global, DynamoDB Global Tables, S3 CRR) |
+| **Decouple** | A queue or topic between components (**SQS**, SNS, EventBridge), so producers and consumers fail and scale independently |
+| **Real-time / streaming** | **Kinesis** (or MSK if "Kafka") |
+| **Shared file storage** | **EFS** (Linux) / **FSx** (Windows, Lustre) |
+| **Low-cost archive** | **S3 Glacier** tiers (Deep Archive for rarely accessed data) |
+| **Serverless** | Lambda, Fargate, DynamoDB, API Gateway, S3, Aurora Serverless |
+| **Read-heavy / read scalability** | **Read Replicas**, Aurora Replicas, ElastiCache, DAX, CloudFront |
+| **Secure / encrypt / least privilege** | IAM roles, KMS, WAF, private subnets plus VPC endpoints |
+| **Cost-efficient / MOST cost-effective** | The cheapest option that **still meets every requirement** (Spot, S3 lifecycle, serverless, Savings Plans) |
+| **LEAST operational overhead** | The most managed or serverless option (Glue over EMR for ETL, Fargate over EC2) |
+| **NOT suitable / which will NOT work** | The question is inverted. Find the option that **breaks** a requirement (wrong Region scope, time limit, protocol). |
+
+### Scenario → service quick-match
+
+| Scenario | Service |
+|---|---|
+| DB connection exhaustion from many Lambdas | **RDS Proxy** |
+| Sudden traffic spikes overwhelm the backend | **SQS** buffer |
+| One event → many consumers | **SNS** fan-out (→ SQS for durability) |
+| Multi-step workflow with retries and branching | **Step Functions** |
+| Multi-Region traffic routing with static IPs | **Global Accelerator** |
+| Private access to AWS services from a VPC | **VPC Endpoint** (Gateway for S3/DynamoDB, Interface for the rest) |
+| On-prem file server extended to AWS | **Storage Gateway** (File Gateway) |
+| Read-heavy relational DB | **Read Replica** |
+| Cross-Region relational DR | **Aurora Global Database** |
+| Metrics + alarm + notify ops | **CloudWatch + SNS** |
+| Application/bulk/transactional email | **SES** |
+| Automated, cross-account long-term backup retention | **AWS Backup** |
+| ETL with least operational overhead | **Glue** |
 
 ## Exam technique (the meta-game)
 
@@ -69,6 +114,12 @@ The SAA-C03 isn't trying to see if you've *heard* of services — it's checking 
 
 > *"Rotate database credentials automatically every 30 days"* → **Secrets Manager** (Parameter Store is the decoy)
 
+> *"Traffic surges for 5–10 seconds and requests are dropped; Auto Scaling is already configured"* → **Put SQS in front to buffer** (ASG reacts in minutes, too slow for second-level bursts)
+
+> *"Which architecture is NOT suitable…"* → **find the option that violates a hard limit** (e.g., ELB across Regions, Lambda over 15 min, CNAME at the apex)
+
+> *"Decouple the order service from the slow invoicing service"* → **SQS queue between them** ("decouple" is almost always SQS/SNS)
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -87,5 +138,11 @@ The SAA-C03 isn't trying to see if you've *heard* of services — it's checking 
 | HA NAT | One per AZ |
 | Durable fan-out | SNS → SQS |
 | Encrypted DX | VPN over DX |
+| Seconds-long spike | SQS buffer (not ASG) |
+| Multi-Region load balancing | Route 53 / Global Accelerator (ELB is single-Region) |
+| Throttling | API Gateway / WAF rate-based rule |
+| Decouple | SQS / SNS |
+| Highly available | Multi-AZ |
+| 3-tier | ALB public, app + DB private |
 
 Traps mapped, combos memorized — one last sweep remains: the small-but-tested gap-fill services that each show up for one or two easy points.

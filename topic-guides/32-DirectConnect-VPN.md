@@ -18,13 +18,23 @@ You have two ways to connect your building to AWS. A **Site-to-Site VPN** (Virtu
 | **Virtual Private Gateway (VGW)** | AWS side | The VPN endpoint attached to your VPC |
 | **Customer Gateway (CGW)** | Your side | Represents your on-prem router/firewall |
 
+- Same thing, many names: **VPN Connection / IPsec VPN / hardware VPN** (older material also says "software VPN" when the on-prem end is software). Full vocabulary: **VGW** (AWS side) · **Customer Gateway** (the *AWS resource* describing your device) · **Customer Gateway device** (the actual physical/software appliance) · **VPN connection** (the link between them) · **VPN tunnel** (each encrypted path — a connection has **two** for redundancy).
+- **One VGW per VPC**: a VPC can have only **one virtual private gateway attached at a time**.
+- Best fit: **immediate need, low-to-modest bandwidth, can tolerate internet variability**.
 - **Client VPN** is the cousin: it connects **individual laptops** to a VPC — think "remote employees working from home," not "connect the datacenter."
+
+### VPN CloudHub — branch offices talking through AWS
+
+A plain VPN links *one* remote network to a VPC; it won't relay traffic **between** two remote sites. **AWS VPN CloudHub** does: several Site-to-Site VPNs terminate on the **same VGW**, and the VGW becomes a **hub-and-spoke** relay so **branch offices can reach each other** (and the VPC) over their existing internet links. Low cost, works as **primary or backup** connectivity. It's for connecting **sites/VPNs, not VPCs** — many VPCs is a Transit Gateway job. Signal: *"multiple branch offices must communicate with each other through AWS"* → **CloudHub**.
 
 ## Direct Connect (DX)
 
 - **Dedicated private fiber** from your location to AWS. Never touches the public internet.
 - **Consistent bandwidth and low latency**: 1, 10, or 100 Gbps.
-- **Setup time: WEEKS to MONTHS** (someone has to physically run fiber).
+- **Setup time: WEEKS to MONTHS** (someone has to physically run fiber) to a **DX location**, and it costs real money — so it's the **wrong answer for a one-time data transfer** (use Snowball/DataSync instead).
+- A **VIF (virtual interface) = a logical connection** carved out of the physical DX link.
+- **VPC peering doesn't extend over DX**: a VPC peered to the DX-connected VPC can't ride its link (no edge-to-edge routing — Section 6).
+- **DX + Transit Gateway** is the scalable combo: lower network costs, more bandwidth and more reliability than the internet, reaching many VPCs through one hub.
 - **THE trap: Direct Connect is NOT encrypted by default.** Private is not the same as encrypted. If a question demands encryption over DX, the answer is **run a Site-to-Site VPN over the Direct Connect link** (IPsec on the private road).
 
 Virtual interfaces (VIFs) — how traffic gets sorted on the fiber:
@@ -65,6 +75,12 @@ Virtual interfaces (VIFs) — how traffic gets sorted on the fiber:
 
 > *"On-prem must reach AWS with no traffic on the public internet"* → **Direct Connect** (the only option that skips the internet entirely)
 
+> *"Several branch offices with existing internet links must communicate with each other via AWS, low cost"* → **AWS VPN CloudHub**
+
+> *"One-time migration of data to AWS"* → **not Direct Connect** (months to provision, ongoing cost) — Snow Family / DataSync
+
+> *"Attach a second VGW to the same VPC"* → **not possible** — one VGW per VPC
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -79,5 +95,8 @@ Virtual interfaces (VIFs) — how traffic gets sorted on the fiber:
 | One DX → many VPCs/regions | Direct Connect Gateway |
 | Remote workers → VPC | Client VPN |
 | Private VIF / Public VIF / Transit VIF | VPC / public services / Transit Gateway |
+| Branch offices ↔ each other via AWS | VPN CloudHub |
+| VGWs per VPC | One |
+| VIF | Logical connection on a DX link |
 
 You now know how ONE office connects to AWS — next up, what happens when dozens of VPCs and offices all need to talk to each other without a wiring nightmare: Transit Gateway.

@@ -21,10 +21,12 @@ FSx is AWS's answer: **fully managed versions of famous third-party filesystems*
 - Native **SMB protocol and NTFS**, integrates with **Active Directory** (both AWS Managed AD and your on-prem AD).
 - Supports **Multi-AZ** deployment for high availability.
 - THE trap: **EFS is Linux-only — it cannot serve Windows/SMB clients.** The moment you see "Windows," EFS is eliminated.
+- What it **can't** do: it can't present S3 objects as files or write results back to S3, and it isn't a parallel HPC file system. Those are **Lustre** jobs.
+- Its Active Directory configuration is set **at creation and can't be changed afterwards**. Switching AD means creating a new file system and migrating the data.
 
 ### FSx for Lustre
 - "Lustre" = Linux + cluster. Built for **massively parallel access**: machine learning training, video rendering farms, genomics, financial modeling. Scales to **hundreds of GB/s** and millions of IOPS.
-- **Unique superpower: native S3 integration.** Point Lustre at an S3 bucket and it presents the objects as files; results can be written back to S3. "Process data *in S3* with a high-performance filesystem" → Lustre, every time.
+- **Unique superpower: native S3 integration.** Point Lustre at an S3 bucket and it presents the objects as files; results can be written back to S3. "Process data *in S3* with a high-performance filesystem" → Lustre, every time. The classic pattern is **hot data processed in parallel on Lustre, cold data left in S3**. Rolling your own (EMR, or a self-managed parallel file system on EC2) doesn't match it for speed or effort.
 - Two deployment types:
 
 | Type | Use | Durability |
@@ -35,6 +37,7 @@ FSx is AWS's answer: **fully managed versions of famous third-party filesystems*
 ### FSx for NetApp ONTAP
 - The migration landing pad for on-prem **NetApp** appliances. Supports **SnapMirror** replication, so you can mirror on-prem NetApp straight into AWS.
 - **Multi-protocol**: NFS, SMB, *and* iSCSI from one filesystem — the only FSx that serves Linux and Windows clients simultaneously.
+- Supports **Multi-AZ** deployment, with consistent **sub-millisecond latency** on its SSD tier.
 
 ### FSx for OpenZFS
 - For migrating **ZFS-based** or generic NFS Linux file servers, with ZFS goodies: instant **snapshots and clones**, low-latency performance.
@@ -57,6 +60,10 @@ FSx is AWS's answer: **fully managed versions of famous third-party filesystems*
 
 > *"Replace an on-prem ZFS file server serving NFS to Linux clients"* → **FSx for OpenZFS** (ZFS named → OpenZFS)
 
+> *"HPC job must process hot data in parallel while cold data stays cheaply in S3"* → **FSx for Lustre linked to S3** (not FSx for Windows, not EMR)
+
+> *"Point an existing FSx for Windows file system at a different Active Directory"* → **Create a new file system** (the AD configuration can't be changed after creation)
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -70,5 +77,9 @@ FSx is AWS's answer: **fully managed versions of famous third-party filesystems*
 | NFS + SMB + iSCSI together | FSx for NetApp ONTAP |
 | ZFS | FSx for OpenZFS |
 | Plain Linux shared storage | EFS (not FSx at all) |
+| Hot data parallel, cold data in S3 | FSx for Lustre + S3 |
+| FSx Windows reading S3 as files? | No (Lustre only) |
+| Change AD on FSx for Windows | Not possible; recreate |
+| Multi-AZ, sub-ms latency, NetApp features | FSx for NetApp ONTAP |
 
 FSx moves files at specialty speed — but when the data is too big to move over a wire at all, you put it on a truck, which is exactly where the Snow Family comes in.

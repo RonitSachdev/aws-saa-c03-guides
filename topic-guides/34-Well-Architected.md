@@ -28,6 +28,14 @@ Quick flavor of each:
 
 **The Well-Architected Tool** is a **free questionnaire in the console**: you answer questions about a workload, pillar by pillar, and it produces an **improvement plan**. "Review our architecture against best practices at no cost" → WA Tool.
 
+**Lookalike tools — which question does each answer?**
+
+| Tool | Question it answers |
+|---|---|
+| **Well-Architected Tool** | *"Is my **architecture** designed correctly?"* It reviews the workload across all six pillars. |
+| **Compute Optimizer** | *"Are my **resources** the right **size**?"* It rightsizes EC2, EBS, Lambda and ASGs only. |
+| **Trusted Advisor** | *"Is anything in my **account** misconfigured right now?"* It runs automated checks for cost, security, fault tolerance, performance and service limits. |
+
 ## The exam angle (this is the real payoff)
 
 Pillars almost never show up as "which pillar is this?" Instead they hide in the **qualifier** of the question: "**MOST cost-effective** solution," "improve the **reliability**," "with the **LEAST operational overhead**." That qualifier is the tiebreaker — typically **two answers would technically work**, and the pillar keyword tells you which one AWS wants.
@@ -46,6 +54,8 @@ Pillars almost never show up as "which pillar is this?" Instead they hide in the
 
 > *"Ensure the architecture follows AWS best practices at no additional cost"* → **AWS Well-Architected Tool** (free console questionnaire → improvement plan)
 
+> *"Get recommendations to improve a workload's reliability, security and cost based on AWS best practices"* → **Well-Architected Tool** (whole-design review; Compute Optimizer only resizes resources)
+
 > *"Reduce the environmental impact of the workload"* → **Graviton instances / serverless** (Sustainability: maximize utilization)
 
 ## Pocket card
@@ -59,6 +69,7 @@ Pillars almost never show up as "which pillar is this?" Instead they hide in the
 | Pay for what you use, measure spend | Cost Optimization (Cost Explorer, Savings Plans, Spot) |
 | Maximize utilization, Graviton | Sustainability |
 | Free best-practices review | Well-Architected Tool |
+| Right-size instances (not design) | Compute Optimizer |
 | "MOST cost-effective / LEAST overhead" | The qualifier picks between two working answers |
 
 Keep those qualifiers in your peripheral vision — they matter most in the next section's territory: disaster recovery, where cost versus recovery speed *is* the whole question.

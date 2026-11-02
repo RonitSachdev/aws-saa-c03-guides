@@ -41,11 +41,17 @@ Deployed as a **VM (or hardware appliance) on-premises**, backed by cloud storag
 
 THE trap: *"low-latency access to the FULL dataset"* → **Stored**, not Cached — a cache only keeps the hot slice; if latency must be low for *everything*, everything must live locally.
 
-Also worth a point: **Tape Gateway** presents a **Virtual Tape Library (VTL)** so existing backup software (Veeam, NetBackup) keeps working unchanged — the tapes are just... S3 and Glacier now. Any scenario with the word **"tape"** ends at Tape Gateway.
+Also worth a point: **Tape Gateway** presents a **Virtual Tape Library (VTL)** so existing backup software (Veeam, NetBackup) keeps working unchanged — the tapes are just... S3 and Glacier now. Any scenario with the word **"tape"** ends at Tape Gateway. Archived virtual tapes can go to **S3 Glacier Flexible Retrieval or S3 Glacier Deep Archive**. *"Lowest-cost long-term tape archive"* → **Deep Archive**.
+
+More gateway facts:
+
+- Storage Gateway exists to **connect existing on-prem storage and apps to cloud storage**. It's **not an application migration tool** (for servers, use Application Migration Service).
+- It's **bandwidth-efficient**: it transfers **only changed data** and **compresses** it on the way.
+- **Volume Gateway** backs volumes up as **point-in-time EBS snapshots**, so you can restore them as EBS volumes in AWS. That's handy for **backup, DR, and migration** of block data.
 
 ### DataSync — the moving company
 
-**AWS DataSync** is the **migration / scheduled-transfer engine**: **one-time or scheduled** sync from on-prem **NFS/SMB** into **S3, EFS, or FSx**. You install an **agent** on-prem, and DataSync moves data fast (it's built for TB-scale over the network) while **preserving file metadata and permissions**, with **bandwidth throttling** so you don't flatten the office internet during business hours. Bonus fact the exam likes: DataSync also moves data **between AWS storage services** — S3 ↔ EFS ↔ FSx — no agent needed for that.
+**AWS DataSync** is the **migration / scheduled-transfer engine**: **one-time or scheduled** sync from on-prem **NFS/SMB** into **S3, EFS, or FSx**. You install an **agent** on-prem, and DataSync moves data fast (it's built for TB-scale over the network) while **preserving file metadata and permissions**, with **bandwidth throttling** so you don't flatten the office internet during business hours. Bonus fact the exam likes: DataSync also moves data **between AWS storage services** — S3 ↔ EFS ↔ FSx — no agent needed for that. DataSync can also **write directly into any S3 storage class, including S3 Glacier Deep Archive**. *"Move on-prem archive files straight to Deep Archive over the network"* → **DataSync**, with no lifecycle hop needed. (DataSync moves **files**. To migrate whole **servers**, use the **replication agent of Application Migration Service (MGN)**.)
 
 **THE distinction of this whole section:**
 
@@ -61,6 +67,15 @@ THE trap: *"migrate 50 TB from on-prem NAS to S3, preserving permissions"* offer
 ### One pointer
 
 Everything above assumes a network path. If the scenario is **offline, or the data is so huge the network math doesn't work** (weeks of transfer time, remote sites, limited bandwidth), that's the **Snow Family** — Section 27's story.
+
+A newer option sits in between: **AWS Data Transfer Terminal**. These are **physical AWS locations** (in select cities) where you **bring your own storage devices** and plug them into a high-throughput connection to upload data to AWS, for example S3. You carry the data in instead of having AWS ship a device to you.
+
+| Option | How the data travels | Signal |
+|---|---|---|
+| **S3 Transfer Acceleration** | Over the internet, via the nearest **edge location** | Long-distance uploads to one bucket |
+| **DataSync** | Over your network (agent) | Online migration/sync, metadata kept |
+| **Data Transfer Terminal** | **You physically bring your drives** to an AWS facility | Large dataset, drives in hand, need it uploaded fast without ordering a device |
+| **Snow Family** | **AWS ships you a device**, which you ship back | Offline / remote / network would take > 1 week |
 
 ## Question patterns
 
@@ -82,6 +97,12 @@ Everything above assumes a network path. If the scenario is **offline, or the da
 
 > *"Transfer data between S3 and EFS within AWS"* → **DataSync** (works AWS-to-AWS too, agentless).
 
+> *"Archive virtual tapes at the lowest possible cost"* → **Tape Gateway → S3 Glacier Deep Archive**.
+
+> *"Copy on-prem archive files directly into S3 Glacier Deep Archive over the network"* → **DataSync** (writes straight to the Deep Archive storage class).
+
+> *"Team has hard drives full of data and wants to upload them at high speed at an AWS facility"* → **AWS Data Transfer Terminal** (bring your own device; Snow = AWS ships a device to you).
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -97,5 +118,11 @@ Everything above assumes a network path. If the scenario is **offline, or the da
 | Partners upload via SFTP/FTPS/FTP | Transfer Family (never SFTP-on-EC2) |
 | Ongoing hybrid access vs. one-time move | Storage Gateway vs. DataSync |
 | Offline / massive data, no bandwidth | Snow Family (Section 27) |
+| Cheapest tape archive tier | Tape Gateway → Glacier Deep Archive |
+| Gateway sends only changed, compressed data | Storage Gateway (bandwidth-efficient) |
+| Volume Gateway backups restorable in AWS | EBS snapshots |
+| Online copy straight to Deep Archive | DataSync |
+| Migrate servers (not files) | Application Migration Service, not DataSync/Gateway |
+| Bring your own drives to an AWS facility | Data Transfer Terminal |
 
 That's the online bridge to the cloud sorted — when the pipe is too small for the payload, you put the data on a truck, and that's where the Snow Family rolls in.

@@ -38,6 +38,8 @@ And a lovely testing feature: **Count mode** — the rule *counts* matches inste
   └──────────────────────────┘
 ```
 
+Also: **NACLs and Security Groups can't block SQLi/XSS** — they only see IPs/ports. HTTP-content attacks → **WAF**.
+
 THE trap: *"attach WAF to a Network Load Balancer"* → **impossible**. NLB is Layer 4 (TCP) — it never parses HTTP, so a Layer 7 firewall has nothing to read. WAF needs an L7 front: **CloudFront, ALB, API Gateway, AppSync, or Cognito**.
 
 ### Shield — the riot police (DDoS)
@@ -47,7 +49,17 @@ THE trap: *"attach WAF to a Network Load Balancer"* → **impossible**. NLB is L
 - **Shield Standard**: **free, automatic, for everyone**. Protects against common **Layer 3/4** attacks (SYN floods, UDP reflection). You already have it — nothing to enable.
 - **Shield Advanced**: **~$3,000/month** (1-year commitment). Adds **Layer 7 DDoS protection**, a **24/7 DDoS Response Team (DRT)** of human experts you can call mid-attack, and **cost protection** — AWS refunds the scaling charges the attack caused.
 
-**Memory hook:** any question mentioning **L7 DDoS, expert help, or refunds for attack-driven scaling** → **Shield Advanced**. A plain "protect against common DDoS at no cost" → **Shield Standard** (it's already on).
+**Memory hook:** any question mentioning **L7 DDoS, expert help, or refunds for attack-driven scaling** → **Shield Advanced**. A plain "protect against common DDoS at no cost" → **Shield Standard** (it's already on). Shield Advanced also gives **near-real-time visibility into attacks** and integrates with WAF.
+
+**THE trap:** **WAF alone is not a DDoS answer** — rate-based rules help with L7 floods, but large-scale DDoS resilience = **Shield + WAF** together.
+
+**DDoS-resilient architecture (the exam's reference answer):**
+
+- **CloudFront** (and Route 53) at the edge to absorb traffic
+- **ALB + Auto Scaling group** to scale out under load
+- Databases (e.g., **RDS**) in **private subnets**
+- **CloudWatch alarms** on unusual **NetworkIn / CPU** spikes
+- **Shield (Advanced for L7/DRT) + WAF** on CloudFront/ALB
 
 ### Firewall Manager — the head of security for the whole chain
 
@@ -57,9 +69,17 @@ You have 50 AWS accounts in an **AWS Organization**. You want every ALB in every
 
 THE trap: *"every new account automatically gets the security policies"* → that word **automatically across accounts** means **Firewall Manager**, not WAF alone. WAF is the rule; Firewall Manager is the rollout machine.
 
+THE trap: **Firewall Manager and Security Hub don't stop attacks themselves.** Firewall Manager only *administers* WAF/Shield Advanced/SG/Network Firewall policies across accounts; Security Hub only *reports* alerts and posture. The thing that actually blocks is **WAF** (L7) / **Shield** (DDoS) / **Network Firewall** (VPC).
+
 ### Network Firewall — the VPC-wide inspector
 
 **AWS Network Firewall** is a **managed firewall for your whole VPC**, inspecting traffic at **Layers 3 through 7** — think intrusion prevention, domain filtering, stateful rules for *all* traffic entering/leaving the VPC, not just HTTP to one ALB. Scenario says *"inspect all traffic in the VPC"* or *"filter outbound traffic to specific domains for the entire VPC"* → **Network Firewall**.
+
+- **Stateful IDS/IPS** built on open-source **Suricata** rules; filters traffic via **IGW, NAT gateway, VPN, or Direct Connect**.
+- Can do **deep packet inspection**, allow only known AWS service domains/IPs, block lists of bad **domains (FQDN)**, and detect protocols like HTTPS **regardless of port** (a NAT Gateway can't filter domains).
+- Deployed at the **VPC level** (firewall endpoints in dedicated subnets), not per subnet; it **can't attach to an ALB** and can't by itself restrict S3 bucket access to one VPC (use bucket policy + VPC endpoint).
+
+**Lookalikes, not firewalls:** **Network Access Analyzer** (VPC feature) *reports* unintended network access paths against your requirements — **no deep packet inspection**. **Traffic Mirroring** *copies* ENI traffic to an appliance/NLB/GWLB for out-of-band analysis. **Detective** can't create a firewall either.
 
 ### The detection zoo — one-liners you must know cold
 
@@ -68,8 +88,8 @@ These are pure matching questions. Burn in the one-liners:
 | Service | One-liner |
 |---|---|
 | **GuardDuty** | **ML threat detection** on **CloudTrail, VPC Flow Logs, DNS logs** — no agents. Finds **cryptomining, unusual API calls, compromised credentials** |
-| **Macie** | **PII / sensitive data discovery in S3** (ML finds credit cards, SSNs) |
-| **Inspector** | **Vulnerability scanner** — **CVEs** on **EC2 (via SSM agent), ECR container images, Lambda** |
+| **Macie** | **PII / sensitive data discovery in S3** (ML finds credit cards, SSNs) — data classification, shows where sensitive data lives and how it's accessed |
+| **Inspector** | **Vulnerability scanner** — **CVEs** on **EC2 (via SSM agent), ECR container images, Lambda**; automated security/compliance assessment of apps (agent collects package & config info) |
 | **Security Hub** | **Aggregation dashboard** — collects findings from all the above + runs compliance standards (CIS, PCI) |
 | **Detective** | **Investigate AFTER a finding** — builds a graph of relationships to find **root cause** |
 | **Artifact** | **Download AWS compliance reports** (SOC, PCI, ISO) to hand to auditors |
@@ -112,6 +132,16 @@ THE trap: *"Macie for EC2 or RDS"* → no. **Macie is S3-only.**
 
 > *"Auditor requests AWS's SOC 2 / PCI compliance reports"* → **Artifact** (self-service report downloads).
 
+> *"Block SQL injection — options include NACL rules"* → **WAF** (NACLs/SGs only see IPs and ports).
+
+> *"Design a web app resilient to DDoS"* → **CloudFront + Shield/WAF in front of ALB + ASG, DB in private subnets, CloudWatch alarms on NetworkIn/CPU** (WAF alone isn't enough).
+
+> *"Which service prevents attacks: WAF, Security Hub, or Firewall Manager?"* → **WAF** (Security Hub reports; Firewall Manager administers).
+
+> *"Deep packet inspection and domain-based filtering for all traffic leaving the VPC"* → **Network Firewall** (Suricata IPS; not Network Access Analyzer, not NAT Gateway).
+
+> *"Identify unintended network access paths to resources against compliance requirements"* → **Network Access Analyzer** (reports only, no packet inspection).
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -130,5 +160,11 @@ THE trap: *"Macie for EC2 or RDS"* → no. **Macie is S3-only.**
 | One findings dashboard + compliance checks | Security Hub |
 | Root cause after a finding | Detective |
 | SOC/PCI/ISO reports for auditors | Artifact |
+| SQLi via NACL/SG? | No — WAF |
+| Large-scale DDoS resilience | Shield + WAF + CloudFront + ASG (not WAF alone) |
+| Manages but doesn't block | Firewall Manager / Security Hub |
+| Suricata IPS, deep packet inspection, FQDN filtering | Network Firewall |
+| Report unintended network access, no DPI | Network Access Analyzer |
+| Copy ENI traffic for analysis | Traffic Mirroring |
 
 You've now got the security crew sorted — next up, the service that decides who your app's *users* even are: Cognito.

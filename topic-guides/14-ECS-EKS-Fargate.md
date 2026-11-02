@@ -48,7 +48,14 @@ Default to **ECS** unless the question says:
 1. **"Already using Kubernetes"** (on-prem k8s migration, existing k8s tooling/manifests), or
 2. **"Portability / multi-cloud / avoid vendor lock-in"** (Kubernetes runs anywhere; ECS is AWS-only).
 
-No k8s keyword? **ECS.** It's simpler and AWS-native.
+No k8s keyword? **ECS.** It's simpler and AWS-native. (*"Docker containers, no Kubernetes needed"* → ECS; *"Kubernetes + serverless / no nodes"* → **EKS on Fargate**.)
+
+### EKS fine print the exam pulls from
+
+- **Control plane**: in EKS, **AWS runs the Kubernetes control plane across multiple AZs** (HA, patched for you); you run (or Fargate runs) the worker nodes.
+- **On-premises flavors**: **EKS Anywhere** = run EKS-distribution Kubernetes on **your own hardware** — **you** manage the clusters (control plane included). **ECS Anywhere** = register on-prem servers as ECS capacity, managed from the ECS control plane. **EKS Connector** = only **registers/views** an external Kubernetes cluster (any provider) in the EKS console — it does not manage it.
+- **Node autoscaling**: **Cluster Autoscaler** scales nodes through **Auto Scaling groups** (fixed instance types per node group). **Karpenter** provisions nodes **directly**, choosing the right instance type/size per pending pods dynamically — faster, better bin-packing, **less operational overhead** → the modern answer for *"efficient EKS node scaling, minimal ops."*
+- **Access control**: **authentication = IAM** (AWS IAM Authenticator; IAM principals mapped via the **`aws-auth` ConfigMap**, auto-created with managed node groups / `eksctl`, now also **EKS access entries**); **authorization = Kubernetes RBAC** (Roles/RoleBindings). *"Give an IAM role read-only access to one namespace"* → map it in aws-auth/access entries **+** a Kubernetes RBAC Role.
 
 ## ECR — the image warehouse
 
@@ -65,12 +72,17 @@ Two IAM roles per task, constantly confused:
 
 Hook: **Execution = getting the container up. Task Role = what the app does once it's up.**
 
+Both are **IAM roles** (trusted by `ecs-tasks.amazonaws.com`) — not resource-based policies. Secrets go in the task definition's **`secrets`** parameter (Secrets Manager / Parameter Store), read by the **execution role** — see Section 21.
+
 ## Networking and scaling facts
 
 - **awsvpc network mode**: every task gets its **own ENI** (Elastic Network Interface — its own private IP) and therefore its **own security group**. "Per-container security group" → awsvpc. (Required mode on Fargate.)
 - **ALB dynamic port mapping**: on the EC2 launch type, an Application Load Balancer can route to **multiple tasks of the same service on one instance**, each on a random host port. No manual port juggling.
-- **Service Auto Scaling**: scale task count on **CPU, memory, or SQS queue depth**.
+- **Service Auto Scaling**: scale task count on **CPU, memory, or SQS queue depth**. Target-tracking predefined metrics: **`ECSServiceAverageCPUUtilization`**, **`ECSServiceAverageMemoryUtilization`**, **`ALBRequestCountPerTarget`**.
 - **Fargate Spot**: discounted Fargate for **interruption-tolerant** workloads.
+- **Pricing**: **Fargate** bills for the **vCPU + memory requested** per task (per second); the **EC2 launch type** has **no extra ECS charge** — you pay for the EC2 instances (and EBS) whether tasks fill them or not.
+- **Shared persistent storage** across tasks (EC2 or Fargate, multi-AZ) → mount **EFS** in the task definition.
+- **App Runner**: even simpler than ECS/Fargate for a containerized web app/API — see Section 37.
 
 ## The compute ladder (which service for which job)
 
@@ -95,6 +107,12 @@ Hook: **Execution = getting the container up. Task Role = what the app does once
 > *"Avoid vendor lock-in / portable across clouds"* → **EKS** (Kubernetes is the portability play)
 > *"Cost-optimize fault-tolerant containerized batch jobs on Fargate"* → **Fargate Spot** (interruptible = Spot)
 > *"Scale container count based on messages waiting in a queue"* → **ECS Service Auto Scaling on SQS queue depth**
+> *"Run Kubernetes on our own data-center hardware with EKS tooling"* → **EKS Anywhere** (you manage the cluster)
+> *"View on-prem/other-cloud Kubernetes clusters in the EKS console"* → **EKS Connector** (view only)
+> *"Scale EKS worker nodes efficiently, right-sized instance types, least ops"* → **Karpenter** (not Cluster Autoscaler + ASGs)
+> *"Grant an IAM role access to specific Kubernetes namespaces"* → **aws-auth ConfigMap / access entries (authN) + Kubernetes RBAC (authZ)**
+> *"Containers in several AZs need a shared file system"* → **EFS volume** in the task definition
+> *"Kubernetes workloads with no nodes to manage"* → **EKS on Fargate**
 
 ## Pocket card
 
@@ -111,5 +129,15 @@ Hook: **Execution = getting the container up. Task Role = what the app does once
 | Per-task ENI + security group | awsvpc mode |
 | Cheap interruptible Fargate | Fargate Spot |
 | Multiple same-service tasks, one instance | ALB dynamic port mapping |
+| EKS control plane | AWS-managed, multi-AZ |
+| Kubernetes on own hardware | EKS Anywhere (you manage) |
+| On-prem servers as ECS capacity | ECS Anywhere |
+| See external k8s clusters in console | EKS Connector |
+| Dynamic right-sized EKS nodes | Karpenter (vs Cluster Autoscaler → ASGs) |
+| EKS authN / authZ | IAM (aws-auth) / Kubernetes RBAC |
+| Fargate pricing | vCPU + memory requested |
+| ECS on EC2 pricing | No extra charge — pay for instances |
+| Shared storage across tasks | EFS |
+| ECS target-tracking metrics | ECSServiceAverageCPU/MemoryUtilization, ALBRequestCountPerTarget |
 
 Once your containers are running, the next question is: what if you don't even want to think about containers — you just want to hand AWS your code? That's Elastic Beanstalk, up next.

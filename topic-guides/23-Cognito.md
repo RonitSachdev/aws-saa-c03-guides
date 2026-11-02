@@ -44,6 +44,9 @@ Note the Identity Pool is generous about what it accepts: tokens from a **User P
 
 - **Authorizers**: a **Cognito User Pool authorizer on API Gateway** validates the JWT before your backend ever runs — "authenticate API users without writing auth code" → User Pool authorizer. ALB can also authenticate through Cognito before forwarding requests.
 - **Guest access**: Identity Pools support **unauthenticated identities** — "let users browse content *before* signing up" → Identity Pool guest access.
+- **Guests need Identity Pools specifically**: plain STS has no notion of an anonymous guest — Identity Pools mint guest credentials. But Identity Pools **don't manage authentication** (no sign-up/sign-in/passwords) — that's always the User Pool or an external IdP.
+- **Web identity federation** (Login with Amazon, Facebook, Google, any **OIDC** IdP) is today done through Cognito — no custom sign-in code, no identities to manage yourself. (Legacy **AWS Mobile Hub** used to wire this up for mobile apps; it's retired in favor of **Amplify**.)
+- **No direct CloudFront integration**: User Pools plug into **API Gateway and ALB**, but **not natively into a CloudFront distribution** — protecting CloudFront content needs **signed URLs/cookies** or **Lambda@Edge** validating the JWT.
 - **Per-user permissions with policy variables**: an IAM policy attached via the Identity Pool can use `${cognito-identity.amazonaws.com:sub}` so each user can only reach `s3://bucket/${their-own-id}/*`. **"Each user accesses only their own folder"** → Identity Pool + **IAM policy variables**. One policy, a million users, zero per-user setup.
 
 ### Cognito vs IAM Identity Center — don't mix up the audiences
@@ -73,6 +76,12 @@ If the humans in the question get a paycheck from the company, Cognito is the wr
 
 > *"Add MFA to your application's customer logins"* → **User Pools** (MFA lives where authentication lives).
 
+> *"Use Cognito Identity Pools to handle user sign-up and password management"* → **Wrong — Identity Pools don't authenticate; use User Pools** (Identity Pools only hand out AWS creds).
+
+> *"Authenticate users with Cognito directly on a CloudFront distribution"* → **Not natively supported — use ALB/API Gateway with a User Pool, or Lambda@Edge / signed cookies** in front of CloudFront.
+
+> *"Mobile app users log in with Amazon/Facebook/Google (OIDC) without custom sign-in code"* → **Web identity federation via Cognito**.
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -87,6 +96,10 @@ If the humans in the question get a paycheck from the company, Cognito is the wr
 | Guest / unauthenticated access | Identity Pools |
 | Each user only their own folder | Identity Pool + IAM policy variables |
 | Employees SSO to AWS accounts | IAM Identity Center (never Cognito) |
+| Identity Pools for sign-in/passwords? | No — User Pools authenticate |
+| Cognito + CloudFront natively? | No — ALB/API GW, or Lambda@Edge |
+| Social/OIDC login, no custom code | Web identity federation (Cognito) |
+| AWS Mobile Hub | Legacy — now Amplify |
 | Memory hook | User Pool = login box (JWT); Identity Pool = exchange desk (creds) |
 
 Cognito handles your app's *customers* — but when the identities live in a corporate Active Directory, you're in the next section's territory: Directory Services.

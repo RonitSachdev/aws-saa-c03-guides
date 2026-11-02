@@ -33,8 +33,22 @@ App request
 | **Sorted sets** (leaderboards) | ✔ | ✘ |
 | Pub/sub messaging | ✔ | ✘ |
 | Multi-threaded, dead-simple | ✘ | ✔ |
+| **HIPAA-eligible** (classic exam answer) | ✔ | ✘ |
+| **Redis AUTH** password + in-transit encryption | ✔ | ✘ |
+| Cross-region replicas (**Global Datastore**) | ✔ | ✘ |
+| **Auto Discovery** of nodes via one Configuration Endpoint | (cluster-mode endpoint instead) | ✔ |
 
 The rule of thumb: if the question asks for **ANY** grown-up feature — durability, failover, backup, leaderboard, pub/sub — the answer is **Redis**. If it says *"simplest possible cache, data loss is acceptable, multithreaded"* → **Memcached**. Redis wins about 90% of exam appearances.
+
+**When to use ElastiCache at all:** **repeated reads**, a **database bottleneck**, or **session storage** — needing **sub-millisecond** latency. Typical use cases: caching, session stores, gaming, geospatial, real-time analytics, lightweight queuing. It *is* a key-value store, but the exam treats it as a **cache in front of a database**, not the primary system of record (for a durable key-value primary store, think DynamoDB).
+
+**Redis extras worth a neuron:**
+
+- **Cluster mode** = data **sharded** across multiple node groups for write/memory scale.
+- **Global Datastore** = write in one region, read from **up to 2 cross-region replica clusters** — low-latency global reads and a **DR** option (promote a secondary).
+- **Securing Redis:** create the cluster with **`--transit-encryption-enabled`** and **`--auth-token`** → clients must present the **Redis AUTH** password over TLS. **At-rest encryption** only protects data on disk/backups — it does **not** authenticate clients. (Newer Redis 7+ also supports IAM auth, but **Redis AUTH** is the classic exam answer.)
+- **Memcached Auto Discovery:** clients connect to a **single Configuration Endpoint** and automatically learn about nodes being added/removed.
+- **Not serverless — classically:** ElastiCache (like RDS and Neptune) was node-based; **ElastiCache Serverless** now exists, but in "fully serverless stack" questions DynamoDB/DAX is still the safer pick.
 
 **Free question alert:** *"gaming leaderboard with real-time ranking"* → **Redis sorted sets**. Sorted sets keep members ordered by score automatically — top-10 lookups are instant. If you see "leaderboard," you're done reading.
 
@@ -82,6 +96,10 @@ Three services all claim to "reduce database read load" — the scenario tells y
 > *"Long analytical/reporting queries slow the production database"* → **Read Replica**, not a cache (diverse queries never hit cache)
 > *"Speed up DynamoDB reads without modifying the application"* → **DAX** (ElastiCache would require code changes)
 > *"Publish/subscribe messaging between app components using the cache layer"* → **Redis** (pub/sub is Redis-only)
+> *"Highly available in-memory database for HIPAA-regulated data"* → **ElastiCache for Redis** (HIPAA-eligible + Multi-AZ)
+> *"Require a password for clients connecting to the cache, encrypted in transit"* → **Redis AUTH** (`--transit-encryption-enabled` + `--auth-token`; at-rest encryption doesn't authenticate)
+> *"Low-latency cache reads in another region, plus cache DR"* → **Redis Global Datastore**
+> *"Clients must find Memcached nodes automatically as the cluster scales"* → **Auto Discovery** (Configuration Endpoint)
 
 ## Pocket card
 
@@ -97,5 +115,9 @@ Three services all claim to "reduce database read load" — the scenario tells y
 | Diverse/analytical read offload | Read Replica |
 | DynamoDB + no code change | DAX |
 | Microseconds | Any in-memory cache (ElastiCache/DAX) |
+| HIPAA in-memory store | Redis |
+| Cache password / AUTH | Redis AUTH + in-transit encryption |
+| Cross-region cache replicas / DR | Redis Global Datastore |
+| Memcached node discovery | Auto Discovery (Configuration Endpoint) |
 
 You now own the "make reads fast" toolbox — next, Section 12 hands you the keyword zoo of specialty databases, where each engine exists to win exactly one kind of question.

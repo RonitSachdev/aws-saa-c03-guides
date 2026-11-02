@@ -39,6 +39,10 @@ complex joins, dashboards all day                 →  REDSHIFT
  Redshift cluster without loading                 →  SPECTRUM)
 ```
 
+- **Spectrum vs Athena in one line:** Athena queries **only S3**; Spectrum **joins S3 data with tables already inside Redshift** in one query. Both handle **structured and semi-structured** files in S3.
+- **Redshift is not for OLTP or session state** — it gives **sub-second-to-seconds** analytic answers, not millisecond row lookups (that's DynamoDB/ElastiCache, and DAX is microseconds).
+- **Redshift DR:** enable **cross-region snapshot copy** on the cluster (pick a destination region + retention) — snapshots are then copied automatically.
+
 **Athena cost optimization** — this appears almost **verbatim**: *"reduce Athena query costs / improve performance."* Athena bills per TB **scanned**, so scan less:
 1. Convert files to **columnar formats — Parquet or ORC** (read only needed columns),
 2. **Compress** the data,
@@ -47,6 +51,32 @@ complex joins, dashboards all day                 →  REDSHIFT
 All three shrink bytes scanned = smaller bill. Memorize the trio.
 
 **OpenSearch combo pattern:** DynamoDB **cannot do fuzzy or full-text search** (it's a coat-check, not a librarian). The exam's fix: **DynamoDB + Streams → Lambda → OpenSearch** — writes land in DynamoDB, the change feed copies them into OpenSearch, and search queries go to OpenSearch.
+
+**DocumentDB vs DynamoDB** — both store JSON-ish documents, so which?
+
+| | **DocumentDB** | **DynamoDB** |
+|---|---|---|
+| Compatibility | **MongoDB** APIs/drivers | AWS-native API |
+| Queries | **Rich ad-hoc queries + secondary indexes** on any field, aggregations | **Key-based** access (partition/sort key, GSIs) |
+| Infrastructure | **Instance/cluster-based** (you size nodes) | **Serverless**, any scale |
+| Pick when | Existing MongoDB app, flexible document queries | Massive scale, predictable key lookups, zero ops |
+
+**Zoo footnotes from the field:**
+
+- **Neptune** classic: build a **social network from user profiles and interactions** (who-knows-whom, likes, follows).
+- **Timestream** is **serverless**, ingests **trillions of events per day**, and AWS pitches it as up to **1000x faster** (and cheaper) than relational DBs for time-series.
+- **QLDB** = a **transparent, immutable, cryptographically verifiable transaction log**. **Legacy note:** AWS has announced **end of support for QLDB (July 2025)** and points customers to **Aurora PostgreSQL** (with audit tables) — expect it only as the "immutable ledger" keyword on older-style questions.
+
+**Database selection cheat sheet:**
+
+| Need | Pick |
+|---|---|
+| Transactional SQL, existing engine | **RDS** |
+| High-performance relational, cloud-native | **Aurora** |
+| Serverless NoSQL key-value | **DynamoDB** |
+| Analytics / warehouse | **Redshift** |
+| Global multi-region NoSQL (multi-writer) | **DynamoDB Global Tables** |
+| Global relational (one writer, fast DR) | **Aurora Global Database** |
 
 ## Question patterns
 
@@ -62,6 +92,10 @@ All three shrink bytes scanned = smaller bill. Memorize the trio.
 > *"Migrate a Cassandra workload"* → **Keyspaces** (keyword match, done)
 > *"Product catalog needs fuzzy, typo-tolerant full-text search; data is in DynamoDB"* → **OpenSearch** (via DynamoDB Streams → Lambda; DynamoDB can't fuzzy-search)
 > *"Analysts' reports are slowing the production OLTP database"* → **move analytics off prod** — to Redshift (the cardinal sin, corrected)
+> *"Join historical data in S3 with current tables in the Redshift warehouse"* → **Redshift Spectrum** (Athena can't see Redshift tables)
+> *"Redshift cluster must be recoverable in another region"* → **cross-region snapshot copy** (destination region + retention)
+> *"MongoDB-compatible JSON documents with rich queries on many fields"* → **DocumentDB**; *"serverless key-based access at any scale"* → **DynamoDB**
+> *"Build a social network from user profiles and their interactions"* → **Neptune**
 
 ## Pocket card
 
@@ -79,5 +113,10 @@ All three shrink bytes scanned = smaller bill. Memorize the trio.
 | "Cassandra" | Keyspaces |
 | Full-text / fuzzy search, log dashboards | OpenSearch |
 | Analytics choking prod OLTP DB | Move it — Redshift |
+| S3 data + Redshift tables in one query | Spectrum (Athena = S3 only) |
+| Redshift DR | Cross-region snapshot copy |
+| MongoDB queries vs key lookups | DocumentDB vs DynamoDB |
+| Session state / OLTP | Not Redshift — DynamoDB/ElastiCache |
+| QLDB | Legacy (end of support 2025) |
 
 That's every database in the toolbox sorted by screw head — now Section 13 turns to the thing that glues all these services together with code: Lambda.

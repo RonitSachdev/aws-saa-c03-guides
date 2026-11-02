@@ -20,6 +20,10 @@ Its superpower is the promise on the tin: **single-digit millisecond latency at 
 
 **THE trap:** *"migrate with no code changes from MySQL"* → that's **RDS/Aurora**, never DynamoDB. NoSQL means rewriting queries.
 
+- **Data model:** **key-value AND document** store (items can hold nested JSON-like attributes). It is **not** an in-memory DB — the in-memory layer is **DAX**.
+- **Why it scales where RDS struggles:** RDS pays for normalization, ACID guarantees and joins across tables; DynamoDB has a **flexible schema**, and a **composite primary key** (partition + sort) keeps related items together and spreads data over more partitions.
+- **Legacy:** **SimpleDB** is the old AWS NoSQL store with per-table request/storage limits — if it appears, the modern answer is DynamoDB.
+
 ### Keys and hot partitions
 
 Every table needs a **partition key** (the coat-check ticket — determines which physical partition stores the item), plus an optional **sort key** (orders items *within* a partition, so one customer can have many orders sorted by date).
@@ -37,7 +41,7 @@ Good key (user_id):            Bad key (country):
 
 ### Capacity modes — same logic as EC2 pricing
 
-- **Provisioned**: you declare read/write capacity up front. **Cheaper for steady, predictable traffic.** Add **auto scaling** to flex within bounds. (This is your Reserved-Instance instinct.)
+- **Provisioned**: you declare read/write capacity up front. **Cheaper for steady, predictable traffic.** Add **auto scaling** to flex within bounds. (This is your Reserved-Instance instinct.) Auto scaling is driven by **Application Auto Scaling**, covers the **table and its GSIs**, and is **not on by default** for tables created via API/CLI — you configure it.
 - **On-Demand**: pay per request, no planning. **Pick for spiky, unpredictable, or brand-new workloads** — flash sales, new apps with unknown traffic. (This is On-Demand EC2 instinct.)
 
 **THE trap:** *"app gets throttled during unpredictable traffic spikes"* → switch to **On-Demand mode**. Don't over-provision.
@@ -63,6 +67,9 @@ Eventual consistency is half price because it may serve a copy that's a heartbea
 | **LSI** (Local Secondary Index) | Alternate *sort* key, same partition key — but can be created **at table creation ONLY**. **THE trap:** if the table already exists, LSI is the wrong answer; pick **GSI**. |
 | **Transactions** | **ACID** across multiple items/tables — all-or-nothing. Costs **2x** the capacity. Keyword: *"atomic"*, *"all succeed or none."* |
 | **PITR** (Point-In-Time Recovery) | Continuous backup, restore to any second in the last **35 days**. |
+| **On-demand backup** | **Full backups kept until you delete them** — long-term archiving/compliance (PITR stops at 35 days). |
+| **Gateway VPC endpoint** | Private EC2 → DynamoDB **without the internet or NAT**: gateway endpoint + **route table entry**, free. (Gateway endpoints exist only for **S3 and DynamoDB**; everything else uses interface endpoints.) |
+| **Export to S3** | Get table data into S3 for analytics — native **export to S3** (from PITR, no RCU) or the **AWS Glue DynamoDB export connector** in an ETL job. |
 
 ### Two more exam staples
 
@@ -74,6 +81,13 @@ User → CloudFront → API Gateway → Lambda → DynamoDB
 ```
 
 Any question asking for a "fully serverless web/API architecture" is assembling this.
+
+**More feature details the exam pokes at:**
+
+- **DAX** handles **cache population and invalidation for you** and absorbs **hot-key reads** (the same items hammered repeatedly). DAX = **microseconds**; don't confuse with Redshift's "sub-second" analytics.
+- **Global Tables** = one **replica table per Region**, managed as a single unit, **multi-master**. **GSIs are not a cross-region feature** — a GSI never replicates data to another region; that's Global Tables' job.
+- **Streams** = an **ordered** change feed. Uses: **Lambda triggers, cross-region/table replication, auditing**. Non-Lambda consumers can read Streams with **KCL via the DynamoDB Streams Kinesis Adapter**. KCL shard iterators "expire immediately"? → KCL's **DynamoDB lease table** is short on write capacity → **increase its WCU**.
+- **AppSync + DynamoDB** = real-time / collaborative apps (GraphQL subscriptions). **Session state** works in DynamoDB *or* ElastiCache — both are valid answers.
 
 **400 KB item limit.** An item can't exceed 400 KB. Storing images/documents? **Put the object in S3, store the S3 pointer (key/URL) in DynamoDB.** This S3-plus-pointer pattern is a recurring correct answer.
 
@@ -89,6 +103,11 @@ Any question asking for a "fully serverless web/API architecture" is assembling 
 > *"Store 2 MB documents per record"* → **S3 for the object, DynamoDB holds the pointer** (400 KB item limit)
 > *"Application must always see the most recent write"* → **Strongly consistent read** (1 RCU vs 2 eventual reads)
 > *"Reporting needs joins across many tables"* → **RDS/Aurora**, not DynamoDB (relational = SQL)
+> *"EC2 in a private subnet must reach DynamoDB without traversing the internet"* → **Gateway VPC endpoint + route table entry** (free; not NAT)
+> *"Export DynamoDB data to S3 for analytics"* → **DynamoDB export to S3 / AWS Glue DynamoDB export connector**
+> *"Keep DynamoDB backups for years"* → **On-demand backups** (or AWS Backup) — PITR only covers 35 days
+> *"KCL app reading DynamoDB Streams: shard iterators expire immediately"* → **Increase WCU on the KCL lease table**
+> *"Real-time collaborative app with live updates"* → **AppSync + DynamoDB**
 
 ## Pocket card
 
@@ -108,5 +127,11 @@ Any question asking for a "fully serverless web/API architecture" is assembling 
 | Item > 400 KB | S3 + pointer |
 | 1 RCU | 1 strong or 2 eventual reads ≤ 4 KB |
 | 1 WCU | 1 write ≤ 1 KB |
+| Private access, no internet | Gateway VPC endpoint |
+| Long-term archive backups | On-demand backup |
+| DynamoDB → S3 | Export to S3 / Glue export connector |
+| Hot-key reads | DAX |
+| GSI in another region | TRAP — use Global Tables |
+| Consume Streams outside Lambda | KCL + Streams Kinesis Adapter |
 
 DynamoDB gives you millisecond answers forever — but when even milliseconds are too slow, you reach for the in-memory layer, and that's where ElastiCache (Section 11) picks up the story.

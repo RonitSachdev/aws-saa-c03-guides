@@ -37,7 +37,10 @@ Jargon check: a **trust relationship** means two separate AD forests agree to ho
 
 - **Managed Microsoft AD** is the answer when the scenario needs *actual AD machinery in AWS*: **EC2 Windows domain join**, **MFA**, seamless integration with **RDS for SQL Server / FSx for Windows / WorkSpaces**, or a **trust with on-prem** so both user sets work. Phrase to spot: *"full AD features in the cloud"* or *"trust with on-prem"*.
 - **AD Connector** is the answer when compliance or policy says **identities must never be stored in the cloud**. It's a pipe, not a directory — every authentication is redirected to the on-prem domain controllers. (Corollary: if the VPN/Direct Connect link to on-prem dies, authentication dies with it.)
-- **Simple AD** is the answer when the words are **"lowest cost"**, **"basic LDAP"**, **"small organization"** — and *nothing* in the scenario mentions trust, MFA, or on-prem integration.
+- **Simple AD** is the answer when the words are **"lowest cost"**, **"basic LDAP"**, **"small organization"** — and *nothing* in the scenario mentions trust, MFA, or on-prem integration. It offers a **subset** of Managed AD: user accounts and group memberships, **group policies**, secure connections to (domain-joined) EC2, and **Kerberos-based SSO**.
+- **AD Connector** is AWS's **"directory gateway"** — and for a company already running a corporate AD, it's usually the **easiest integration**. Bonus: once connected, you can **assign IAM roles to AD users/groups** so they reach the AWS console with their AD logins (no IAM users).
+- Where it sits in the identity map: **Directory Service** = directory integration for **Windows/AD workloads and domain-joined EC2**; **IAM Identity Center** = workforce SSO to AWS accounts; **Cognito** = app customers. (Directory Service historically also offered **Amazon Cloud Directory**, a non-AD graph directory — legacy, rarely tested.)
+- **Amazon WorkSpaces** = managed cloud **virtual desktops (VDI)**, Windows or Linux, scaling to thousands of workers — "full desktop" (vs **AppStream 2.0** = stream a single app). It authenticates against one of the three directories.
 
 THE trap: *"connect Simple AD to on-prem AD with a trust"* → **can't**. Simple AD supports **no trust and no MFA** — the moment either word appears, Simple AD is eliminated.
 
@@ -65,6 +68,10 @@ Remember this trio, because it fuels most directory questions: **FSx for Windows
 
 > *"WorkSpaces desktops authenticating against on-prem AD without replicating the directory"* → **AD Connector** (phone line: auth flows back on-prem).
 
+> *"Employees should sign into the AWS console with their existing corporate AD credentials, with the least effort"* → **AD Connector + IAM roles mapped to AD users/groups** (or Identity Center with AD as the source).
+
+> *"Provide thousands of workers with secure Windows/Linux cloud desktops"* → **Amazon WorkSpaces** (VDI; needs a directory).
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -77,6 +84,10 @@ Remember this trio, because it fuels most directory questions: **FSx for Windows
 | Low cost, basic LDAP, small org | Simple AD |
 | No trust, no MFA | Simple AD's limits |
 | FSx Windows / WorkSpaces / RDS SQL Server | All need a directory — pick from the three |
+| Existing corporate AD, easiest integration | AD Connector ("directory gateway") |
+| AD users into AWS console | AD Connector + IAM roles for AD users/groups |
+| Simple AD features | Users/groups, group policies, EC2 domain join, Kerberos SSO |
+| Cloud virtual desktops (VDI) | Amazon WorkSpaces |
 | Memory hook | Full copy w/ trust / phone line / budget clone |
 
 Directories solve *who* on-prem users are in the cloud — next we solve where their *files* live, with the hybrid storage bridge crew: Storage Gateway, DataSync, and Transfer Family.

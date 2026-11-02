@@ -32,6 +32,9 @@ Signal phrases:
 - "**Zero downtime**, both regions active" → **Multi-Site Active-Active**.
 - "Lowest cost, RTO of hours is fine" → **Backup & Restore**.
 
+- Multi-Site is also called **"Hot Standby"** — both sites take a share of live traffic.
+- Map to Route 53 (see Section 7): **active-active** (Weighted/Latency + health checks, every site serves, no primary/secondary) = Multi-Site; **active-passive** (Failover policy, primary serves, secondary waits) = Pilot Light / Warm Standby.
+
 **THE trap: don't buy a better spare tire than the question asks for.** If RTO is "a few hours," Active-Active is wrong even though it's "better" — it fails the cost qualifier.
 
 ## The supporting cast
@@ -45,6 +48,24 @@ Signal phrases:
 | **Elastic Disaster Recovery (DRS)** | **Continuous block-level replication of servers** (on-prem or EC2) into AWS — cheap DR for lifted servers, RPO seconds / RTO minutes |
 | **Route 53 failover routing** | Health check fails → DNS flips traffic to the DR region |
 | **DMS** | Database Migration Service — also does ongoing replication between databases |
+| **AMI copy** | AMIs are Region-bound — copy them to the DR region ahead of time (see Section 3) |
+| **RDS / Redshift cross-region snapshot copy** | Ship DB snapshots to the DR region (Redshift: enable on the cluster with destination region + retention) — Backup & Restore tier |
+| **ElastiCache Redis Global Datastore** | Cross-region cache replicas; promote a secondary in a regional outage |
+
+**AWS Backup, a bit deeper:** one console for **backup policies**, **automated cross-region AND cross-account copies** (long-term retention in an isolated account), covering AWS services **plus on-prem VMware and Storage Gateway volumes**. Contrast with **Data Lifecycle Manager (DLM)** = EBS snapshots/AMIs only. (Notes sometimes say "AWS Backup only works on AWS resources" — outdated; hybrid VMware support exists.)
+
+### Database migration with minimal downtime
+
+| Requirement | Approach |
+|---|---|
+| Migrate with **minimal downtime** | **DMS** (source stays live, full load + CDC) |
+| **Ongoing replication** between DBs | **DMS** |
+| One-time copy, downtime acceptable | **Snapshot → restore** |
+| Promote a read replica to standalone | Works, but **some downtime** at cut-over |
+| Change engine / deployment type in place | **Usually not possible** → migrate instead |
+
+- DMS does **homogeneous** (MySQL → MySQL) and **heterogeneous** (Oracle → Aurora) moves; for heterogeneous, **SCT** converts **schemas, stored procedures, foreign keys** first.
+- DMS Basic Schema Copy vs SCT is covered in Section 37.
 
 ## How to answer any DR question
 
@@ -70,6 +91,10 @@ Signal phrases:
 
 > *"Automatically route users to the standby region when the primary fails"* → **Route 53 failover routing with health checks**
 
+> *"Keep backups in a separate account for long-term retention, automatically"* → **AWS Backup cross-account copy** (centralized policies)
+
+> *"Migrate a production database to AWS with minimal downtime"* → **DMS** (source stays operational; add SCT if the engine changes)
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -85,5 +110,8 @@ Signal phrases:
 | Centralized cross-service backups | AWS Backup (+ Vault Lock) |
 | Replicate on-prem servers for DR | Elastic Disaster Recovery (DRS) |
 | DNS failover to DR region | Route 53 failover routing |
+| Backups in another account | AWS Backup cross-account copy |
+| Migrate DB, minimal downtime | DMS (+ SCT if engine changes) |
+| One-time DB copy, downtime OK | Snapshot → restore |
 
 You now hold the full toolbox — time to sharpen it against the exam's favorite tricks: the classic traps and must-know combos.

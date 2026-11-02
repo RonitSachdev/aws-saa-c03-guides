@@ -23,6 +23,13 @@ THE trap: **Budgets alerts, Explorer analyzes.** If the scenario wants a *notifi
 
 Second nuance worth a mark: tags don't help billing **retroactively or automatically** — a cost allocation tag only starts appearing in billing data **after you activate it**, and only for usage from then on.
 
+Third lookalike: **Compute Optimizer vs Well-Architected Tool.** Compute Optimizer asks *"are my **resources** the right **size**?"* (EC2/EBS/Lambda/ASG metrics → rightsizing). The WA Tool asks *"is my **architecture** designed correctly across all six pillars?"* (a questionnaire → improvement plan). Resource sizing ≠ design review.
+
+Reserved Instance billing quirks:
+- When an RI **expires**, the instance keeps running and is billed at the **On-Demand** rate.
+- **Terminating** the instance does **not** stop RI charges. You pay for the full term.
+- A Reserved Instance is a billing commitment, not a specific machine.
+
 **The decision line:** **SEE** spend → Cost Explorer. **ALERT** on spend → Budgets. **RAW detail** → CUR + Athena. **UNUSUAL** spend → Anomaly Detection. **RIGHTSIZE** → Compute Optimizer. **Per-team chargeback** → Cost Allocation Tags.
 
 ## Question patterns
@@ -41,6 +48,10 @@ Second nuance worth a mark: tags don't help billing **retroactively or automatic
 
 > *"Decide how much Savings Plan commitment to purchase"* → **Cost Explorer recommendations** (based on your historical usage)
 
+> *"Check whether the workload's overall design follows AWS best practices (not just instance sizes)"* → **Well-Architected Tool** (Compute Optimizer only rightsizes resources)
+
+> *"A 1-year RI ended last week; what happens to the running instance's bill?"* → **It keeps running at On-Demand rates** (nothing stops, the discount just disappears)
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -53,5 +64,8 @@ Second nuance worth a mark: tags don't help billing **retroactively or automatic
 | Cost per team / chargeback | Cost Allocation Tags (activate first) |
 | RI / Savings Plan buy advice | Cost Explorer |
 | Custom internal billing views | Billing Conductor |
+| Review design against pillars | Well-Architected Tool (not Compute Optimizer) |
+| RI expired | Falls back to On-Demand price |
+| One bill across accounts | Organizations consolidated billing |
 
 That closes out the governance-and-cost corner of the exam — from here, every scenario about "who pays, who sees, who's warned" should feel like matching verbs to vending machines.

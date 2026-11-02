@@ -26,10 +26,28 @@ Now for **THE core distinction — the most-tested database fact on the entire e
 
 And note: **production uses BOTH** — Multi-AZ for surviving failures, replicas for scaling reads. They're not competitors.
 
+### The full three-way: Multi-AZ vs Multi-Region vs Read Replicas
+
+| | **Multi-AZ** | **Multi-Region** (e.g. Aurora Global DB) | **Read Replicas** |
+|---|---|---|---|
+| Main purpose | **High availability** | **Disaster recovery + local read performance** | **Scalability** (reads) |
+| Replication | **Sync** (non-Aurora); **async** (Aurora) | **Async** | **Async** |
+| Active instances | **Primary only** (non-Aurora); **all active** (Aurora) | **All regions readable** | **All replicas readable** |
+| Backups | Taken **from the standby** (non-Aurora); from **shared storage** (Aurora) | Per region | **None by default** |
+| Span | ≥2 AZs in **one region** | Each region can itself be Multi-AZ | Within an AZ, cross-AZ, or cross-Region |
+| Engine upgrades | On the **primary** (non-Aurora); **all instances together** (Aurora) | Independent per region (Aurora: together) | **Independent of the source** (Aurora: together) |
+| Failover | **Automatic** to standby (non-Aurora) / to a replica (Aurora) | Aurora can **promote a secondary region** to master | **Manual promotion** to a standalone DB (non-Aurora) / to primary (Aurora) |
+
+- **How Multi-AZ failover actually works:** RDS **flips the endpoint's CNAME** to the standby — the app keeps the same hostname. Automatic triggers: **loss of the primary AZ, loss of network, compute failure, storage failure**.
+- **Read replicas** exist for **MySQL, MariaDB, PostgreSQL, Oracle, SQL Server — and Aurora**. Cross-region replication runs over an **encrypted, public-key channel**. Lag: **seconds on RDS**, **milliseconds (<1s) on Aurora**.
+- **"Managed", not "fully managed" / not serverless:** RDS still makes **you** pick instance size, **backup window**, and **maintenance (patch) window**. *"No servers to manage at all"* points to DynamoDB / Aurora Serverless, not RDS.
+
 ## Backups & encryption
 
 - **Automated backups** → enable **PITR (Point-In-Time Recovery)**, retention **maximum 35 days**. Deleted when the instance is deleted.
-- **Manual snapshots** → kept **forever**, until you delete them. **"Retain backups for 5 years / 7 years / compliance" → manual snapshot**, always — 35 days is the wall automated backups can't cross.
+- **Manual snapshots** → kept **forever**, until you delete them. **"Retain backups for 5 years / 7 years / compliance" → manual snapshot**, always — 35 days is the wall automated backups can't cross. The managed alternative for >35 days: an **AWS Backup plan** (e.g. daily backups, retained 90 days / 7 years) does the scheduling and expiry for you.
+- **Snapshots can be copied cross-region** (cheap DR). Exporting snapshot data **to S3 is a manual "export" action** — automated snapshots don't land in S3 by themselves.
+- **MySQL: use InnoDB, not MyISAM.** PITR and snapshot restore depend on crash-recoverable storage; **MyISAM has no reliable crash recovery**, so restores can be inconsistent. MyISAM only makes sense for heavy full-text search.
 
 **Encryption is a birth decision.** You can only encrypt an RDS database **at creation**. To encrypt an existing unencrypted database, do the snapshot dance (this question is essentially guaranteed):
 
@@ -45,8 +63,24 @@ Databases hate being swarmed. Every connection costs memory, and **Lambda** — 
 
 - **Lambda + RDS = RDS Proxy. Always.** If those two appear in the same sentence with "too many connections" or "connection errors," you're done reading.
 - Bonus: the proxy also **shrinks failover time** (it holds client connections and re-routes them, instead of everyone re-resolving DNS).
+- Keyword generalization: **"database connection exhaustion"** from *any* fleet (Lambda, containers, autoscaled EC2) → **RDS Proxy**. It **preserves application connections during failover** and routes them to the new primary.
 
 Also worth one neuron: **storage autoscaling** — RDS can grow its storage automatically when it runs low ("database keeps running out of disk with unpredictable growth" → enable storage autoscaling).
+
+## Security & monitoring
+
+- **Network lockdown:** put the DB in a **private subnet** (app behind ALB + Auto Scaling), and make the **DB security group's inbound rule reference the app/EC2 security group** as its source — never IP ranges (SG referencing, Section 6).
+- **IAM database authentication** (MySQL & PostgreSQL): token instead of password, over SSL, managed centrally in IAM — full detail in Section 1. (Raw STS tokens on their own are **not** the RDS answer.)
+- **RDS events** (via SNS/EventBridge) cover **operational** events only — instance, parameter group, security group, snapshot changes. Reacting to **row-level INSERT/UPDATE/DELETE** needs engine-native features (triggers / stored procedures calling Lambda), not RDS event subscriptions.
+
+**Enhanced Monitoring vs CloudWatch metrics:**
+
+| | **CloudWatch (standard)** | **Enhanced Monitoring** |
+|---|---|---|
+| Source | The **hypervisor** | An **agent on the instance** |
+| Sees | CPUUtilization, DB connections, FreeableMemory, Read/Write IOPS | **OS-level** metrics: **per-process CPU% and memory%**, RDS processes, RDS child processes, OS processes |
+
+**THE trap:** *"see how much CPU/memory each process or thread uses"* → **Enhanced Monitoring**. Keywords **"OS", "process", "thread", "child process"** = Enhanced Monitoring; plain CloudWatch can't see inside the instance.
 
 ## Aurora
 
@@ -66,6 +100,20 @@ Because every node plugs into the **same shared storage**, a failed writer is re
 - **Up to 15 replicas with ~millisecond lag** (vs async seconds on RDS)
 - **Storage auto-grows to 128 TB** — no provisioning
 - **Two endpoints**: the **writer endpoint** (points at the current writer, survives failover) and the **reader endpoint** (load-balances across all replicas). Apps send writes to one and reads to the other — never hardcode instance addresses.
+- Also: **continuous backup to S3 with PITR**, storage across **3 AZs**. Aurora is **not** an in-memory DB, and it handles **OLTP (ACID transactions) plus complex queries**. Aurora is **"provisioned"** (fixed instance sizes, predictable load) unless you choose Serverless (infrequent / intermittent / sporadic load).
+
+**Aurora endpoints cheat sheet:**
+
+| Endpoint | Use it for |
+|---|---|
+| **Cluster (writer)** | All **writes** + DDL (and reads) — always points at the current primary |
+| **Reader** | **Load-balanced read-only** traffic across replicas |
+| **Custom** | Route a workload to a **specific subset** of replicas (e.g. bigger instances for analytics) |
+| **Instance** | Connect to **one exact DB instance** — troubleshooting / fine-grained tuning |
+
+- **Aurora failover** = the cluster endpoint's **CNAME is flipped** to a promoted replica (not an A-record change). **No replica?** Aurora tries to create a new primary in the **same AZ first**, then another AZ (slower).
+- **Parallel Query** pushes processing down to the storage layer to speed up **one big analytical query** — it does **NOT** load-balance traffic.
+- **Babelfish for Aurora PostgreSQL** understands **T-SQL / SQL Server wire protocol** → move a **SQL Server app** to Aurora PostgreSQL with **minimal code changes**.
 
 **Aurora's special features — feature → scenario:**
 
@@ -100,6 +148,16 @@ RPO (Recovery Point Objective) = how much data you may lose; RTO (Recovery Time 
 
 > *"Application needs OS-level access / a custom database engine"* → **EC2** (or RDS Custom for Oracle/SQL Server) — plain RDS gives no OS access.
 
+> *"Monitor CPU and memory used by each process/thread on the RDS instance"* → **Enhanced Monitoring** (agent on the instance; CloudWatch only sees hypervisor-level metrics).
+
+> *"Run analytics on a subset of Aurora replicas without touching the rest"* → **Aurora custom endpoint**.
+
+> *"Speed up a single complex analytical query on Aurora MySQL"* → **Parallel Query** (not a load balancer — the reader endpoint does that).
+
+> *"Migrate a SQL Server application to Aurora with minimal code changes"* → **Babelfish for Aurora PostgreSQL** (speaks T-SQL).
+
+> *"Keep application connections alive through a database failover"* → **RDS Proxy** (holds connections, routes to the new primary).
+
 ## Pocket card
 
 | Keyword in question | Answer |
@@ -119,5 +177,11 @@ RPO (Recovery Point Objective) = how much data you may lose; RTO (Recovery Time 
 | cross-region DR, RPO ~1s, RTO <1min | **Aurora Global Database** |
 | instant prod copy for staging | **Aurora Cloning** |
 | undo mistake fast, no restore | **Aurora Backtrack** |
+| "OS", "process", "thread", "child process" metrics | **Enhanced Monitoring** |
+| route to a subset of Aurora replicas | **Custom endpoint** (one exact node = instance endpoint) |
+| one heavy analytic query faster | **Aurora Parallel Query** |
+| SQL Server app → Aurora, minimal changes | **Babelfish** |
+| MySQL engine for PITR/snapshots | **InnoDB** (not MyISAM) |
+| backups >35 days, managed schedule | **AWS Backup plan** (or manual snapshots) |
 
 You now know how to keep the database standing and fast — but when the exam's read traffic is the *same* hot data thousands of times per second, even fifteen replicas is the wrong answer, and that's where caching with ElastiCache takes over.

@@ -48,9 +48,12 @@ And whenever **Lambda talks to RDS**: hundreds of short-lived functions each ope
 ### Odds and ends the exam sprinkles in
 
 - **Execution role**: the **IAM role attached to the function** IS its permissions. "Lambda can't write to DynamoDB" → fix the execution role.
+- **Execution role vs resource-based policy** — two directions, two documents:
+  - **Resource-based (function) policy** = **who can invoke ME** (S3, SNS, API Gateway, another account). *"S3 can't trigger the function"* / *"cross-account invoke"* → add permission to the **function policy**.
+  - **Execution role** = **what I can access**. When the function calls S3, DynamoDB, SQS, or **KMS**, AWS evaluates the **execution role** (the principal is the assumed role session, not the function ARN). So a **KMS key policy** or bucket policy must grant the **execution role**, not "the Lambda function."
 - **Layers**: package **shared libraries/dependencies** once, reuse across functions.
 - **Container images**: deploy Lambda as a container up to **10 GB** — the answer when dependencies blow past the 250 MB zip limit.
-- **Environment variables**: config outside code; encrypt secrets with **KMS**.
+- **Environment variables**: config outside code; encrypt secrets with **KMS**. They're **encrypted at rest by default**, but anyone with console/`GetFunctionConfiguration` access **sees them in plaintext** — real secrets (DB passwords, API keys) belong in **Secrets Manager / Parameter Store**, fetched at runtime.
 - **EventBridge scheduled rule → Lambda** = **serverless cron**. Any *"run a task every night at 2 AM without servers"* → this.
 
 ### Code at the edge: Lambda@Edge vs CloudFront Functions
@@ -80,6 +83,9 @@ Rule: *needs external calls or real logic* → **Lambda@Edge**; *trivial header/
 > *"Rewrite URLs or add security headers on millions of requests, cheapest"* → **CloudFront Functions** (sub-ms, ~1/6 price, no network)
 > *"Asynchronously invoked function fails and events disappear"* → **DLQ / on-failure destination** (async retries twice, then drops)
 > *"Lambda should process SQS messages"* → **Event Source Mapping** (Lambda pulls in batches; failures return to the queue)
+> *"S3 in another account must invoke the function"* → **Resource-based (function) policy** (who can invoke me)
+> *"Lambda gets AccessDenied decrypting with a KMS key"* → **Grant the execution role in the key policy / role policy** (the role is the principal, not the function)
+> *"Store a DB password for Lambda so console users can't read it"* → **Secrets Manager / Parameter Store SecureString**, not plain env vars
 
 ## Pocket card
 
@@ -99,6 +105,9 @@ Rule: *needs external calls or real logic* → **Lambda@Edge**; *trivial header/
 | Shared dependencies | Layers |
 | Deps > 250 MB | Container image (10 GB) |
 | Function permissions | Execution role |
+| Who can invoke the function | Resource-based (function) policy |
+| Lambda → KMS/S3/DynamoDB access checked against | Execution role (not function ARN) |
+| Secrets visible in env vars | Secrets Manager / Parameter Store |
 | Edge + network calls / JWT | Lambda@Edge |
 | Edge header/URL tweak, cheapest | CloudFront Functions |
 | Max runtime / memory / concurrency | 15 min / 10 GB / 1,000 default |

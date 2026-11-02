@@ -64,6 +64,24 @@ That last row is gold: *"retry failed steps with exponential backoff without wri
 
 "Workflow includes a **human approval step**" or "runs for days" → **Standard**. "**Hundreds of thousands of short IoT events** per second, cost-sensitive" → **Express**.
 
+Why it survives failures: Step Functions **maintains application state** — it tracks exactly which step each execution is on and logs the data passed between steps, so if a network fails or a component hangs, the workflow **resumes where it left off**. It stitches together Lambda, **Fargate/ECS**, SageMaker, DynamoDB, and more.
+
+### SWF — the legacy orchestrator
+
+**Amazon SWF (Simple Workflow Service)** is the older, **non-serverless** way to coordinate multi-step work across **distributed** components: a managed **state tracker and task coordinator**. You run the workers yourself (typically on **EC2** or on-prem).
+
+| Actor | Role |
+|---|---|
+| **Workflow starter** | Kicks off a workflow execution (e.g. the app when an order is placed) |
+| **Decider** | Holds the **control logic** — decides which task runs next |
+| **Activity worker** | Does the actual task (can even be a **human** step) |
+
+- Guarantee to remember: SWF **assigns each task exactly once and never duplicates it**.
+- It manages workflows — it is **not** a monitoring/notification service.
+- Classic SWF-flavored scenarios: a **multi-step, multi-decision e-commerce checkout**, orchestrating **distributed business processes** with **EC2 + SWF**, media processing pipelines.
+
+THE trap: on the modern exam, **Step Functions is the default answer** for orchestration (serverless, visual, built-in retries). Pick **SWF** only when the question explicitly needs it — **external signals** into a running workflow, **child workflows**, or an existing SWF/legacy setup. Want serverless *batch jobs* instead of orchestration? That's **AWS Batch**.
+
 ## Question patterns
 
 > *"Run a cleanup Lambda every night at 2 AM without managing servers."* → **EventBridge scheduled rule → Lambda** (serverless cron, no EC2 crontab).
@@ -86,6 +104,12 @@ That last row is gold: *"retry failed steps with exponential backoff without wri
 
 > *"Retry a failing step with exponential backoff, no custom retry code."* → **Step Functions Retry** (built into the state definition).
 
+> *"Workflow must resume exactly where it left off after a component hangs or the network fails."* → **Step Functions** (tracks state + logs data between steps).
+
+> *"Coordinate tasks across distributed EC2 workers; each task must be assigned exactly once, never duplicated; uses deciders and activity workers."* → **Amazon SWF** (legacy; otherwise prefer Step Functions).
+
+> *"New serverless orchestration of multiple services with branching and retries."* → **Step Functions** (not SWF — SWF isn't serverless).
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -103,5 +127,9 @@ That last row is gold: *"retry failed steps with exponential backoff without wri
 | For-each over items | Map state |
 | Branching logic | Choice state |
 | Backoff retries, no code | Built-in Retry |
+| Resume after failure / app state tracking | Step Functions |
+| Starter / decider / activity worker | SWF (legacy) |
+| Task assigned once, never duplicated | SWF |
+| SWF vs new serverless workflow | Step Functions by default |
 
 EventBridge decides *which* work should happen when an event arrives; Step Functions makes sure multi-step work *finishes correctly* — and next we meet the services that watch everything else: CloudWatch, CloudTrail, and Config.

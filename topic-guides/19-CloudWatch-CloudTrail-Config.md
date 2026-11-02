@@ -14,7 +14,15 @@ Read the question's verb: *slow/high/alert* → CloudWatch. *Who/deleted/changed
 
 **Metrics.** Numbers over time. EC2 sends **CPU, network, and disk-ops by default** — but **MEMORY and disk-space usage are NOT default metrics**. To get those you install the **CloudWatch agent** (custom metrics). This is a classic trap: "alert when instance memory exceeds 80%" → the answer involves the **agent + custom metric**, never a default metric.
 
-**Alarms.** Watch a metric, cross a threshold, take action: notify **SNS**, trigger **Auto Scaling**, or run **EC2 actions** (stop/terminate/recover). **Composite alarms** combine several alarms with AND/OR to **reduce alert noise** — "too many alarms firing at once" → composite alarm.
+- Agent-only metrics to recognize: **memory, disk space, disk swap, page file utilization** — plus the agent **collects instance/application log files** into CloudWatch Logs (it replaces the old CloudWatch Logs agent).
+- Once memory is a custom metric, an **Auto Scaling group can scale on it** (target tracking / step scaling on the custom metric).
+
+**Alarms.** Watch a metric, cross a threshold, take action: notify **SNS**, trigger **Auto Scaling**, or run **EC2 actions** (stop/terminate/**reboot**/recover). "Monitor a metric and **email** the team" → **CloudWatch alarm → SNS topic** (email subscription) — SNS, not SES.
+
+- **Recover** action: only for **system status check** failures (AWS-side hardware/host problems), **not instance status check** failures, and only for **EBS-backed** instances (instance store isn't supported). The recovered instance keeps its instance ID, IPs, and EBS volumes.
+- Recovery is a **CloudWatch alarm action** — an EventBridge (CloudWatch Events) rule can't directly trigger EC2 recovery.
+
+**Composite alarms** combine several alarms with AND/OR to **reduce alert noise** — "too many alarms firing at once" → composite alarm.
 
 **Logs.** Log **groups** (per app) contain log **streams** (per instance/container). Retention configurable **1 day to 10 years** (default: forever). Three power features:
 
@@ -32,6 +40,9 @@ Every API call — console click, CLI command, SDK call — is recorded: identit
 - **Management events** (control plane: create/terminate/modify resources) are logged **by default**. **DATA events** (S3 **object-level** reads/writes, Lambda invokes) are **opt-in and cost extra** — THE trap: *"who deleted the object in the bucket?"* → default CloudTrail can't say; you need **data events enabled**.
 - **Log file integrity validation**: cryptographically prove logs weren't tampered with — the "forensics/court" keyword.
 - **CloudTrail Insights**: detects **unusual API activity** (sudden spike in TerminateInstances).
+- Trail log files delivered to S3 are **encrypted with S3 server-side encryption (SSE) by default** — nothing to configure. (Opt for **SSE-KMS** if you need your own key.)
+- Scope: CloudTrail logs **AWS account activity (API calls)** for governance, compliance, and operational/risk auditing — **not your application's internals** (that's X-Ray tracing / CloudWatch Logs). Conversely, **X-Ray doesn't record AWS API calls**.
+- S3 nuance: CloudTrail gives API-level bucket/object tracking, but **not per-request details like referrer and turn-around time** → that's **S3 server access logs**.
 
 ## AWS Config — "what did it look like, and is it compliant?"
 
@@ -39,7 +50,25 @@ Every API call — console click, CLI command, SDK call — is recorded: identit
 - **Config rules** (AWS-**managed** or **custom** Lambda-backed) continuously evaluate compliance: "no security group may allow SSH from 0.0.0.0/0". Results roll up to a **compliance dashboard**.
 - **Auto-remediation**: a noncompliant resource can trigger an **SSM Automation document** to fix itself — "automatically close world-open SSH" → **Config rule + remediation action**.
 
+- Example managed rule: **`IAM_PASSWORD_POLICY`** — checks the account's IAM password policy for compliance.
+
 **THE trap: Config does NOT prevent anything.** It **detects** and (optionally) remediates *after the fact*. If the question says "**prevent** users from ever doing X" → that's **SCPs** (or IAM), not Config.
+
+**Config vs Trusted Advisor:** Trusted Advisor only gives **best-practice recommendations** (cost, security, fault tolerance, performance, service limits) — you **can't define your own rules** in it. Custom compliance rules → **Config**.
+
+### The "who watches what" lineup
+
+| Service | Answers | Cue |
+|---|---|---|
+| **CloudWatch** | How is it performing? | metrics, logs, alarms |
+| **CloudTrail** | Who did what (API calls)? | audit, "who deleted/changed" |
+| **AWS Config** | What did it look like / is it compliant? | config history, rules |
+| **Trusted Advisor** | Am I following best practices? | recommendations, service limits |
+| **IAM Credential Report** | Status of every user's credentials | passwords/access keys/MFA age |
+| **VPC Flow Logs** | What network traffic hit the ENI? | IPs, ports, ACCEPT/REJECT |
+| **X-Ray** | Which hop in the request is slow? | distributed tracing |
+
+**CloudWatch Logs vs VPC Flow Logs:** CloudWatch Logs holds **application/OS log lines**; Flow Logs capture **network traffic metadata** (and can be *delivered into* CloudWatch Logs or S3).
 
 ```
 Question verb          →  Service
@@ -73,6 +102,20 @@ Question verb          →  Service
 
 > *"Prevent anyone in the org from disabling CloudTrail."* → **SCP** (Config detects; SCP prevents).
 
+> *"Scale an Auto Scaling group on EC2 memory utilization."* → **CloudWatch agent custom memory metric + ASG scaling policy**.
+
+> *"Monitor EC2 metrics and email the ops team when a threshold is crossed."* → **CloudWatch alarm → SNS** (not SES).
+
+> *"Automatically recover an EC2 instance when the underlying host fails."* → **CloudWatch alarm on StatusCheckFailed_System + recover action** (EBS-backed only; not for instance status check failures).
+
+> *"Encrypt CloudTrail log files in S3 — what must you do?"* → **Nothing** (SSE by default; choose SSE-KMS only for your own key).
+
+> *"Define custom compliance rules, e.g. check the IAM password policy."* → **AWS Config rule (`IAM_PASSWORD_POLICY`)** (Trusted Advisor only recommends).
+
+> *"Get best-practice recommendations on cost, security, and service limits."* → **Trusted Advisor**.
+
+> *"List all IAM users and the status of their passwords, access keys, and MFA."* → **IAM Credential Report**.
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -92,5 +135,14 @@ Question verb          →  Service
 | Auto-fix noncompliance | Config + SSM remediation |
 | PREVENT actions | SCP (never Config) |
 | Trace across microservices | X-Ray |
+| ASG scale on memory | Agent custom metric + scaling policy |
+| Metric threshold → email | CloudWatch alarm → SNS |
+| Alarm EC2 actions | Stop / terminate / reboot / recover |
+| Auto-recover EC2 | System status check failure, EBS-backed only |
+| CloudTrail log encryption | SSE by default (SSE-KMS optional) |
+| Custom compliance rules | Config (not Trusted Advisor) |
+| Best-practice recommendations | Trusted Advisor |
+| Per-user credential status | IAM Credential Report |
+| App logs vs network traffic | CloudWatch Logs vs VPC Flow Logs |
 
 Now you know who's watching the house — next comes who holds the keys: KMS and CloudHSM.

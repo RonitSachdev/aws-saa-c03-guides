@@ -8,7 +8,9 @@ Think of it as an office building. The management account is the building owner.
 
 ## Core concepts
 
-**Consolidated billing** — the whole organization gets **one bill**, paid by the management account. Better yet, usage is **pooled for volume discounts**, and **Reserved Instances and Savings Plans are shared across accounts** by default: if account A bought an RI it isn't using, account B's matching instance gets the discount. "Multiple accounts, want one invoice and shared discounts" → Organizations consolidated billing.
+**Consolidated billing** — the whole organization gets **one bill**, paid by the management account. Better yet, usage is **pooled for volume discounts**, and **Reserved Instances and Savings Plans are shared across accounts** by default: if account A bought an RI it isn't using, account B's matching instance gets the discount. "Multiple accounts, want one invoice and shared discounts" → Organizations consolidated billing. You still get a **combined view plus a detailed per-account cost report**.
+
+Organizations also lets you **create accounts programmatically (automate account creation)** and **group them into OUs**. What it does **not** do is authenticate people: there's **no external-IdP login on Organizations itself** — workforce sign-in is **IAM Identity Center**.
 
 **SCPs (Service Control Policies)** — the exam's favorite. Three facts to burn in:
 
@@ -20,6 +22,19 @@ THE trap: **SCPs do NOT apply to the management account.** The building owner is
 
 A second sneaky pattern: *"A user has AdministratorAccess in a member account but gets Access Denied."* Nothing is broken — **check the SCP** on their account or OU.
 
+One-line contrast: **IAM policy = what a user CAN do; SCP = the maximum an account can EVER do.** SCPs restrict accounts — they **don't authenticate or grant access to teams**.
+
+**Who-does-what in the identity/governance map:**
+
+| Need | Service |
+|---|---|
+| Manage/group many AWS accounts, one bill | **Organizations** |
+| Guardrails across accounts | **SCPs** |
+| Employees' single login across accounts (incl. corporate directory) | **IAM Identity Center** |
+| Windows AD / domain-joined EC2 | **Directory Service** |
+| Mobile/web app customers | **Cognito** |
+| Pre-built governed landing zone | **Control Tower** |
+
 **Control Tower** — Organizations gives you the raw tree; **Control Tower is the automated, opinionated setup on top of it**. It builds a **landing zone** (a pre-architected multi-account environment with logging, audit accounts, SSO), and provides:
 
 | Piece | What it does |
@@ -30,7 +45,7 @@ A second sneaky pattern: *"A user has AdministratorAccess in a member account bu
 
 Signal phrase: "set up / automate a **governed, secure multi-account environment** with best practices" → **Control Tower**. If the question is just about grouping accounts or billing, plain Organizations suffices.
 
-**RAM (Resource Access Manager)** — share actual **resources** across accounts without duplicating them: **VPC subnets** (multiple accounts launching into one shared VPC), **Transit Gateways**, **Route 53 Resolver rules**, License Manager configs. "Avoid building the same networking in every account" → RAM.
+**RAM (Resource Access Manager)** — share actual **resources** across accounts without duplicating them: **VPC subnets** (multiple accounts launching into one shared VPC), **Transit Gateways**, **Route 53 Resolver rules**, License Manager configs. "Avoid building the same networking in every account" → RAM. RAM can share **within your Organization (OUs/accounts) or with any individual AWS account**; for **VPC sharing**, the owner shares **subnets** (not the VPC object) with participant accounts **in the same Organization**.
 
 ## Question patterns
 
@@ -50,6 +65,10 @@ Signal phrase: "set up / automate a **governed, secure multi-account environment
 
 > *"Guardrail that flags noncompliant resources but doesn't block creation"* → **Detective guardrail** (Config rule; preventive = SCP = block)
 
+> *"Teams must log in with corporate credentials across all accounts — use SCPs?"* → **No — IAM Identity Center** (SCPs restrict, they don't authenticate; Organizations has no external login)
+
+> *"Automate creation of new accounts and group them by business unit"* → **AWS Organizations** (account creation API + OUs; Control Tower Account Factory if baselines are needed)
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -64,5 +83,9 @@ Signal phrase: "set up / automate a **governed, secure multi-account environment
 | Detective guardrail | Config rule (flags) |
 | Share subnets / TGW / resolver rules | RAM |
 | Admin denied in member account | Check the SCP |
+| Account managed under Organizations | Member account |
+| SCP for authentication/login? | No — IAM Identity Center |
+| VPC sharing via RAM | Share subnets, same Organization |
+| Per-account cost detail within one bill | Consolidated billing report |
 
 Governance says which accounts may do what — the next layer down is letting teams safely launch only pre-approved infrastructure, which is Service Catalog's job.

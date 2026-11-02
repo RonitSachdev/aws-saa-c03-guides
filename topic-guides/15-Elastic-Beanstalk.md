@@ -12,6 +12,7 @@ Two exam-critical identity facts:
 
 - **EB is an orchestrator, NOT a black box.** You retain **full control of the underlying resources**. The identity phrase the exam loves: *"deploy a web application quickly without managing infrastructure BUT retain control over the resources."* That sentence = Beanstalk.
 - **EB itself is free** — you pay only for the resources it creates (EC2, ALB, etc.).
+- **Where your files go**: Beanstalk stores your **application versions (source bundles)** and, optionally, **server/instance logs** in an **S3 bucket** it creates per Region (`elasticbeanstalk-<region>-<account>`).
 
 Config tweaks live in **`.ebextensions`** — YAML/JSON files in your code bundle that customize the environment (packages, env vars, resources).
 
@@ -92,6 +93,7 @@ EB is for: *one classic web app, developers who want speed, control retained.*
 | SQS-driven background tier | Worker environment |
 | Instance/env customization files | .ebextensions |
 | Beanstalk pricing | Free — pay for resources only |
+| Where EB keeps app versions + logs | S3 bucket |
 | Fine-grained IaC instead | CloudFormation |
 
 Beanstalk fronts your app with a load balancer automatically — but when your "app" is an API consumed by other programs, you want a smarter front door: API Gateway, next section.

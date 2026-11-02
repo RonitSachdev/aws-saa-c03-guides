@@ -20,6 +20,10 @@ Need control — your own key policy, cross-account grants, rotation you can poi
 
 **Key policies + IAM: BOTH must allow.** Access to use a key = the **key policy** says yes **and** the caller's **IAM policy** says yes. A user with `kms:*` in IAM still gets denied if the key policy doesn't permit them.
 
+**KMS permissions follow the principal.** When Lambda/ECS/EC2 uses a key, the caller is the **role** (execution role, task role, instance role) — grant *that* role in the key policy, not the function or instance ARN. KMS is IAM-based: there's **no username/password** to "enable encryption".
+
+What KMS is (and isn't): it holds **keys** and does encryption operations for files, strings, S3 objects, EBS, secrets — it does **not store secrets** themselves. **Secrets Manager always encrypts with a KMS key** (your CMK or the default `aws/secretsmanager`), so Secrets Manager depends on KMS. Lambda **environment variables are KMS-encrypted at rest by default**, but anyone with console access to the function can still read them — for real secrets, encrypt with a CMK using **encryption helpers** or, better, use Secrets Manager.
+
 ## Envelope encryption — the ≤4KB rule
 
 **KMS will only directly encrypt data up to 4KB.** For anything bigger, use the **GenerateDataKey** pattern (**envelope encryption**):
@@ -49,6 +53,10 @@ The big data never travels to KMS; KMS only wraps/unwraps the small **data key**
 - **YOU manage the keys; AWS has no access to them** — AWS manages the hardware only.
 - Use cases: strict **regulatory/compliance** mandates, **BYOK**-style full key custody, **SSL/TLS offload**, running your own certificate authority.
 
+- **KMS custom key store**: authorize KMS to use **your CloudHSM cluster** as the key backend — you keep KMS's service integrations and CloudTrail audit, while key material lives in single-tenant HSMs you control.
+- CloudHSM stores **keys**, not passwords/secrets (that's Secrets Manager).
+- **THE trap:** run **at least two HSMs in different AZs**. With a single HSM, keys created since the last **daily backup** can be lost — and if you lose your HSM credentials, **AWS cannot recover your keys**.
+
 **Decision rule:** "AWS must not be able to access the keys" / "FIPS 140-2 Level 3" / "dedicated hardware" → **CloudHSM**. Everything else — integration, audit, low cost, ease → **KMS**.
 
 ## Question patterns
@@ -71,6 +79,14 @@ The big data never travels to KMS; KMS only wraps/unwraps the small **data key**
 
 > *"User has full IAM KMS permissions but still gets AccessDenied on a key."* → **Key policy doesn't allow them — BOTH key policy and IAM must permit**.
 
+> *"Want KMS integration with S3/EBS, but key material must live in dedicated HSMs you control."* → **KMS custom key store backed by CloudHSM**.
+
+> *"CloudHSM must not lose keys if an HSM fails."* → **Cluster of 2+ HSMs across AZs** (a single HSM risks keys created since the last daily backup).
+
+> *"Lambda needs to decrypt with a CMK — what goes in the key policy?"* → **The Lambda execution role** (permissions follow the principal).
+
+> *"Sensitive values in Lambda environment variables are visible in the console."* → **Encrypt with a CMK via encryption helpers, or move them to Secrets Manager** (default encryption is at rest only).
+
 ## Pocket card
 
 | Keyword | Answer |
@@ -86,5 +102,10 @@ The big data never travels to KMS; KMS only wraps/unwraps the small **data key**
 | "AWS cannot see keys" / dedicated hardware | CloudHSM |
 | SSL offload / own CA | CloudHSM |
 | Access needs key policy AND IAM | Both must allow |
+| Lambda/ECS uses a key | Grant the role (permissions follow the principal) |
+| KMS + your own HSMs | Custom key store (CloudHSM) |
+| CloudHSM high availability | 2+ HSMs in different AZs |
+| Lost CloudHSM credentials | Keys unrecoverable — AWS can't help |
+| Store passwords? | Not KMS/CloudHSM — Secrets Manager |
 
 You now hold the keys — next, the safes where applications keep their passwords: Secrets Manager and Parameter Store.
