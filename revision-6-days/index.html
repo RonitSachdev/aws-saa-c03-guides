@@ -1,0 +1,3079 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS SAA-C03 — 6-Day Crash Revision</title>
+<style>
+:root{--bg:#fff;--fg:#1d2433;--mut:#5b6678;--acc:#ff9900;--card:#f6f8fb;--bd:#d9dfe8}
+@media(prefers-color-scheme:dark){:root{--bg:#12161f;--fg:#e6eaf2;--mut:#9aa6ba;--card:#1b2130;--bd:#2c3446}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,sans-serif}
+header{position:sticky;top:0;background:var(--bg);border-bottom:2px solid var(--acc);padding:10px 16px;z-index:5}
+h1.t{margin:0 0 8px;font-size:18px}
+nav button{margin:2px 4px 2px 0;padding:6px 12px;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:6px;cursor:pointer}
+nav button.on{background:var(--acc);color:#000;border-color:var(--acc)}
+#q{margin-top:6px;width:100%;max-width:420px;padding:7px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--fg)}
+main{max-width:960px;margin:0 auto;padding:16px}
+section{display:none}section.on{display:block}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid var(--bd);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:var(--card)}tr:nth-child(even) td{background:var(--card)}
+tr.hide,li.hide{display:none}
+h1,h2{border-bottom:1px solid var(--bd);padding-bottom:4px}h2{color:var(--acc)}
+blockquote{margin:8px 0;padding:6px 12px;border-left:4px solid var(--acc);background:var(--card);color:var(--mut)}
+code{background:var(--card);padding:1px 4px;border-radius:3px}
+li input{margin-right:6px}
+@media print{header{display:none}section{display:block!important}}
+</style></head><body>
+<header><h1 class="t">AWS SAA-C03 — 6-Day Crash Revision</h1><nav><button data-t="plan">6-Day Plan</button><button data-t="pairs">Decision Pairs</button><button data-t="cards">All Pocket Cards</button><button data-t="traps">Exam Traps</button><button data-t="rules">Rules & Technique</button></nav>
+<input id="q" type="search" placeholder="Filter rows (e.g. NACL, Glacier, FIPS)…"></header>
+<main><section id="plan"><h1>Daily Plan (Day 1 → Day 6 = exam eve; exam = Day 7)</h1>
+<p>Guide numbers refer to <code>../topic-guides/NN-*.md</code>.</p>
+<h2>Day 1 — Core infrastructure (highest weight)</h2>
+<ul>
+<li><strong>Morning:</strong> 06 VPC (SG vs NACL, NAT per AZ, Gateway vs Interface endpoint, peering vs TGW vs PrivateLink), 01 IAM (roles, SCP vs boundary, STS)</li>
+<li><strong>Afternoon:</strong> 02 S3 (storage classes, lifecycle, replication, encryption, Object Lock), 03 EC2 (pricing options, placement groups)</li>
+<li><strong>Evening:</strong> 04 EBS/EFS/Instance Store, 05 ELB &amp; Auto Scaling — pocket cards only</li>
+<li><strong>Test:</strong> 20 practice questions on VPC + S3 + IAM</li>
+</ul>
+<h2>Day 2 — Databases + caching</h2>
+<ul>
+<li><strong>Morning:</strong> 09 RDS/Aurora (Multi-AZ vs Read Replica = #1 question), 10 DynamoDB (DAX, GSI/LSI, Streams, Global Tables)</li>
+<li><strong>Afternoon:</strong> 11 ElastiCache (Redis vs Memcached), 12 Other Databases (Redshift, Athena, Neptune, QLDB, DocumentDB, Keyspaces, Timestream)</li>
+<li><strong>Evening:</strong> 26 FSx, 25 Storage Gateway / DataSync / Transfer Family, 27 Snow Family</li>
+<li><strong>Test:</strong> 20 questions on databases + storage</li>
+</ul>
+<h2>Day 3 — Decoupling, serverless, containers</h2>
+<ul>
+<li><strong>Morning:</strong> 17 SQS/SNS/Kinesis (heaviest single source), 18 EventBridge &amp; Step Functions</li>
+<li><strong>Afternoon:</strong> 13 Lambda, 16 API Gateway, 14 ECS/EKS/Fargate, 15 Elastic Beanstalk</li>
+<li><strong>Evening:</strong> redo the Day 1 pocket cards (spaced repetition)</li>
+<li><strong>Test:</strong> 20 questions on messaging + serverless</li>
+</ul>
+<h2>Day 4 — Networking, edge, hybrid, security</h2>
+<ul>
+<li><strong>Morning:</strong> 07 Route 53 (routing policies, Alias vs CNAME), 08 CloudFront vs Global Accelerator, 32 Direct Connect &amp; VPN, 33 Transit Gateway</li>
+<li><strong>Afternoon:</strong> 20 KMS/CloudHSM, 21 Secrets Manager vs Parameter Store, 22 WAF/Shield/security services, 23 Cognito, 24 Directory Services</li>
+<li><strong>Evening:</strong> redo Day 2 pocket cards</li>
+<li><strong>Test:</strong> 20 questions on networking + security</li>
+</ul>
+<h2>Day 5 — Management, cost, architecture, DR</h2>
+<ul>
+<li><strong>Morning:</strong> 19 CloudWatch/CloudTrail/Config, 28 CloudFormation, 29 Organizations/Control Tower, 30 Service Catalog/Trusted Advisor</li>
+<li><strong>Afternoon:</strong> 31 Cost Management, 34 Well-Architected, 35 Disaster Recovery (Backup &amp; Restore → Pilot Light → Warm Standby → Multi-site: RTO/RPO vs cost)</li>
+<li><strong>Evening:</strong> 37 Gap-Fill Services pocket card</li>
+<li><strong>Test:</strong> full <strong>timed mock exam (65 q / 130 min)</strong>; log every miss</li>
+</ul>
+<h2>Day 6 — Consolidate (exam eve)</h2>
+<ul>
+<li><strong>Morning:</strong> review your mistakes list + mock exam wrong answers; reread <a href="#">03-Top-Decision-Pairs.md</a></li>
+<li><strong>Midday:</strong> read 36 Exam Traps &amp; Key Patterns twice; skim <a href="#">02-All-Pocket-Cards.md</a> once</li>
+<li><strong>Afternoon:</strong> second timed mock (or 30 mixed questions) — light review only</li>
+<li><strong>Evening:</strong> stop by early evening. Prepare ID, confirm exam time/location or online-proctor setup. Sleep.</li>
+</ul>
+<h2>Exam morning (Day 7)</h2>
+<p>Re-read only: Section 36 pocket card + your mistakes list (15–20 min). Then go.</p></section><section id="pairs"><h1>Top Decision Pairs — "X vs Y" (most-tested distinctions)</h1>
+<table>
+<thead>
+<tr>
+<th>Choose between</th>
+<th>Rule of thumb</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RDS Multi-AZ vs Read Replica</td>
+<td>Multi-AZ = HA/failover (standby not readable). Read Replica = scale reads (async, can be cross-region).</td>
+</tr>
+<tr>
+<td>Security Group vs NACL</td>
+<td>SG: stateful, allow-only, instance level. NACL: stateless, allow+deny, subnet level → <strong>block an IP = NACL</strong>.</td>
+</tr>
+<tr>
+<td>Gateway vs Interface Endpoint</td>
+<td>Gateway = S3 &amp; DynamoDB only, free, route table. Interface = most other services, ENI, paid, PrivateLink.</td>
+</tr>
+<tr>
+<td>NAT Gateway vs NAT Instance</td>
+<td>NAT GW managed, HA within AZ → <strong>one per AZ</strong>.</td>
+</tr>
+<tr>
+<td>VPC Peering vs Transit Gateway</td>
+<td>Peering is non-transitive, 1:1. TGW = hub-and-spoke, transitive.</td>
+</tr>
+<tr>
+<td>ALB vs NLB vs GWLB</td>
+<td>ALB = L7, path/host routing. NLB = L4, static IP, extreme perf. GWLB = third-party appliances.</td>
+</tr>
+<tr>
+<td>CloudFront vs Global Accelerator</td>
+<td>CloudFront = HTTP(S) caching CDN. GA = static anycast IPs, TCP/UDP, no caching.</td>
+</tr>
+<tr>
+<td>CNAME vs Alias</td>
+<td>Apex domain / AWS resource target = <strong>Alias</strong> (free for AWS targets).</td>
+</tr>
+<tr>
+<td>SQS vs SNS vs Kinesis vs EventBridge</td>
+<td>SQS = queue/decouple. SNS = pub/sub fan-out. Kinesis = ordered real-time stream, replay. EventBridge = event bus, SaaS/AWS events, rules.</td>
+</tr>
+<tr>
+<td>SQS Standard vs FIFO</td>
+<td>Standard = unlimited throughput, at-least-once. FIFO = ordering + exactly-once, limited throughput.</td>
+</tr>
+<tr>
+<td>Secrets Manager vs Parameter Store</td>
+<td>Auto-rotation = Secrets Manager. Cheap config = Parameter Store.</td>
+</tr>
+<tr>
+<td>KMS vs CloudHSM</td>
+<td>KMS managed multi-tenant. CloudHSM = FIPS 140-2 L3, single-tenant, you manage keys.</td>
+</tr>
+<tr>
+<td>WAF vs Shield</td>
+<td>WAF = L7 rules (SQLi, XSS, rate). Shield = DDoS (Standard L3/L4 free; Advanced paid + response team).</td>
+</tr>
+<tr>
+<td>Cognito User Pool vs Identity Pool</td>
+<td>User Pool = sign-in/JWT. Identity Pool = temporary AWS credentials.</td>
+</tr>
+<tr>
+<td>EBS vs EFS vs Instance Store</td>
+<td>EBS = single-AZ block. EFS = shared Linux NFS, multi-AZ. Instance store = ephemeral, fastest.</td>
+</tr>
+<tr>
+<td>FSx Windows vs Lustre vs EFS</td>
+<td>Windows/SMB/AD = FSx Windows. HPC/S3-linked = Lustre. Linux shared = EFS.</td>
+</tr>
+<tr>
+<td>EC2 pricing</td>
+<td>Steady 1–3 yr = Reserved/Savings Plan. Interruptible = Spot. Unpredictable short = On-Demand. Compliance/licence = Dedicated Host.</td>
+</tr>
+<tr>
+<td>S3 IA vs One Zone-IA vs Intelligent-Tiering</td>
+<td>One Zone only for re-creatable data. IT only for unknown/changing access. Known pattern → lifecycle rule.</td>
+</tr>
+<tr>
+<td>Glacier classes</td>
+<td>Instant (ms), Flexible (minutes–12 h), Deep Archive (12–48 h, cheapest).</td>
+</tr>
+<tr>
+<td>DynamoDB GSI vs LSI</td>
+<td>LSI only at table creation. Otherwise GSI.</td>
+</tr>
+<tr>
+<td>DAX vs ElastiCache</td>
+<td>DAX = DynamoDB microsecond cache, no code change to queries.</td>
+</tr>
+<tr>
+<td>Redis vs Memcached</td>
+<td>Redis = persistence, replication, HA, rich types. Memcached = simple, multithread.</td>
+</tr>
+<tr>
+<td>Aurora Global vs Aurora Replicas</td>
+<td>Global = cross-region DR, &lt;1 s lag, fast promotion.</td>
+</tr>
+<tr>
+<td>Redshift vs Athena</td>
+<td>Redshift = data warehouse cluster. Athena = serverless SQL on S3.</td>
+</tr>
+<tr>
+<td>Snowball vs DataSync vs DX</td>
+<td>Offline/huge/poor network = Snow. Online file transfer = DataSync. Ongoing dedicated link = DX.</td>
+</tr>
+<tr>
+<td>Direct Connect vs Site-to-Site VPN</td>
+<td>DX = private, consistent, NOT encrypted. VPN = encrypted, fast to set up, internet.</td>
+</tr>
+<tr>
+<td>CloudTrail vs CloudWatch vs Config</td>
+<td>Trail = who did what (API). CloudWatch = metrics/logs/alarms. Config = resource config history/compliance.</td>
+</tr>
+<tr>
+<td>SCP vs Permission Boundary</td>
+<td>SCP = org/account guardrail (not on mgmt account). Boundary = max perms for one IAM entity.</td>
+</tr>
+<tr>
+<td>Lambda vs Fargate vs Batch</td>
+<td>&gt;15 min or long-running containers → Fargate/Batch.</td>
+</tr>
+<tr>
+<td>API Gateway types</td>
+<td>REST (full features, usage plans) vs HTTP (cheaper) vs WebSocket; 29 s timeout.</td>
+</tr>
+<tr>
+<td>Beanstalk deployments</td>
+<td>All-at-once (fastest, downtime) → Rolling → Rolling+batch → Immutable → Blue/green (swap).</td>
+</tr>
+<tr>
+<td>DR strategies</td>
+<td>Backup&amp;Restore (cheapest, slowest) → Pilot Light → Warm Standby → Multi-site active/active (fastest, most costly).</td>
+</tr>
+<tr>
+<td>Reserved Instances vs Savings Plans</td>
+<td>Savings Plans more flexible (Compute SP spans EC2/Fargate/Lambda).</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Verify any row you are unsure of against the full guide before relying on it.</p>
+</blockquote></section><section id="cards"><h1>All Pocket Cards — one-file rapid review</h1>
+<p>Auto-collected from each guide's "Pocket card" section. Read it top to bottom; open the full guide only when a row feels unfamiliar.</p>
+<hr />
+<h2>Section 1: IAM — Identity and Access Management  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword in the question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EC2/app needs AWS access, "most secure"</td>
+<td>Instance role (instance profile), never keys</td>
+</tr>
+<tr>
+<td>Lambda needs permissions</td>
+<td>Execution role</td>
+</tr>
+<tr>
+<td>Hardcoded / stored access keys</td>
+<td>Wrong — replace with a role</td>
+</tr>
+<tr>
+<td>Temporary / short-lived credentials</td>
+<td>STS AssumeRole</td>
+</tr>
+<tr>
+<td>Access across AWS accounts</td>
+<td>Role in target account + trust policy</td>
+</tr>
+<tr>
+<td>Third party assumes your role safely</td>
+<td>ExternalId in trust policy</td>
+</tr>
+<tr>
+<td>Role exists but "can't be assumed"</td>
+<td>Fix the trust policy</td>
+</tr>
+<tr>
+<td>Allow exists but action denied</td>
+<td>Explicit Deny / SCP / permission boundary</td>
+</tr>
+<tr>
+<td>Org-wide restriction, applies even to root</td>
+<td>SCP (AWS Organizations)</td>
+</tr>
+<tr>
+<td>Cap max permissions of ONE user/role</td>
+<td>Permission boundary</td>
+</tr>
+<tr>
+<td>Policy on the resource, has a Principal</td>
+<td>Resource-based policy (e.g., bucket policy)</td>
+</tr>
+<tr>
+<td>Legacy S3 grant mechanism, avoid</td>
+<td>S3 ACL (≠ Network ACL)</td>
+</tr>
+<tr>
+<td>SSO, one login → many AWS accounts</td>
+<td>IAM Identity Center</td>
+</tr>
+<tr>
+<td>Federate Okta / Azure AD / corporate AD</td>
+<td>IAM Identity Center + SAML 2.0</td>
+</tr>
+<tr>
+<td>Federate app customers (Google/Facebook login)</td>
+<td>Cognito</td>
+</tr>
+<tr>
+<td>Require MFA for an action</td>
+<td>Condition: aws:MultiFactorAuthPresent</td>
+</tr>
+<tr>
+<td>Root account</td>
+<td>MFA on, no access keys, don't use daily</td>
+</tr>
+<tr>
+<td>Who is my resource shared with externally?</td>
+<td>IAM Access Analyzer</td>
+</tr>
+<tr>
+<td>Find unused users / stale permissions</td>
+<td>Credentials report / access advisor</td>
+</tr>
+</tbody>
+</table>
+<p>IAM is the "who may act" layer under everything else — next up, S3, where you'll see these same policies show up on the resource side as bucket policies.</p>
+<hr />
+<h2>Section 2: S3 — Simple Storage Service  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frequently accessed / hot</td>
+<td>S3 Standard</td>
+</tr>
+<tr>
+<td>Lives &lt; 30 days</td>
+<td>Standard (minimum-duration charges kill the rest)</td>
+</tr>
+<tr>
+<td>Infrequent + instant retrieval</td>
+<td>Standard-IA</td>
+</tr>
+<tr>
+<td>"Can be regenerated / secondary copy"</td>
+<td>One Zone-IA</td>
+</tr>
+<tr>
+<td>"Unknown / unpredictable access"</td>
+<td>Intelligent-Tiering</td>
+</tr>
+<tr>
+<td>Known pattern over time</td>
+<td>Lifecycle rule (beats Intelligent-Tiering)</td>
+</tr>
+<tr>
+<td>Archive + milliseconds retrieval</td>
+<td>Glacier Instant Retrieval</td>
+</tr>
+<tr>
+<td>Archive + minutes-to-hours OK</td>
+<td>Glacier Flexible (Expedited 1–5 min / Std 3–5 hr / Bulk 5–12 hr)</td>
+</tr>
+<tr>
+<td>Cheapest, 12+ hr retrieval OK</td>
+<td>Glacier Deep Archive (never faster than 12 hr)</td>
+</tr>
+<tr>
+<td>Object &gt; 5 GB (or &gt; 100 MB)</td>
+<td>Multipart upload (required / recommended)</td>
+</tr>
+<tr>
+<td>Accidental delete/overwrite protection</td>
+<td>Versioning (+ MFA Delete for root-MFA-gated deletes)</td>
+</tr>
+<tr>
+<td>Copy to another region, DR/compliance</td>
+<td>CRR (versioning on both sides)</td>
+</tr>
+<tr>
+<td>Aggregate logs / copy within region</td>
+<td>SRR</td>
+</tr>
+<tr>
+<td>Replicate EXISTING objects</td>
+<td>S3 Batch Replication</td>
+</tr>
+<tr>
+<td>Default encryption, zero effort</td>
+<td>SSE-S3</td>
+</tr>
+<tr>
+<td>"Audit key usage" / control rotation</td>
+<td>SSE-KMS (in CloudTrail)</td>
+</tr>
+<tr>
+<td>KMS request costs too high</td>
+<td>S3 Bucket Key (~99% fewer KMS calls, coarser audit)</td>
+</tr>
+<tr>
+<td>Customer supplies key per request</td>
+<td>SSE-C (HTTPS mandatory)</td>
+</tr>
+<tr>
+<td>"AWS must never see plaintext"</td>
+<td>Client-side encryption</td>
+</tr>
+<tr>
+<td>Encrypt in transit / enforce HTTPS</td>
+<td>Deny aws:SecureTransport = false</td>
+</tr>
+<tr>
+<td>Encrypt EXISTING objects</td>
+<td>S3 Batch Operations</td>
+</tr>
+<tr>
+<td>WORM, "not even root can delete"</td>
+<td>Object Lock — Compliance mode</td>
+</tr>
+<tr>
+<td>WORM, privileged users may bypass</td>
+<td>Object Lock — Governance mode</td>
+</tr>
+<tr>
+<td>"Lawsuit," indefinite hold</td>
+<td>Legal Hold</td>
+</tr>
+<tr>
+<td>Temporary download link, no AWS account</td>
+<td>Presigned URL (creator's perms, ≤ 7 days)</td>
+</tr>
+<tr>
+<td>Public policy exists but access fails</td>
+<td>Block Public Access is on</td>
+</tr>
+<tr>
+<td>S3 reachable only via CloudFront</td>
+<td>OAC</td>
+</tr>
+<tr>
+<td>Who accessed — cheap/complete/delayed</td>
+<td>S3 Server Access Logs (different bucket! + Athena)</td>
+</tr>
+<tr>
+<td>Who accessed — real-time + IAM identity</td>
+<td>CloudTrail data events</td>
+</tr>
+<tr>
+<td>More requests/sec</td>
+<td>More prefixes (3,500 PUT / 5,500 GET per prefix)</td>
+</tr>
+<tr>
+<td>Global UPLOADS to one bucket</td>
+<td>Transfer Acceleration (pay only if faster)</td>
+</tr>
+<tr>
+<td>Global DOWNLOADS</td>
+<td>CloudFront</td>
+</tr>
+<tr>
+<td>Download part of an object</td>
+<td>Byte-range fetch</td>
+</tr>
+<tr>
+<td>"When object uploaded, trigger..."</td>
+<td>Event notification → Lambda/SQS/SNS/EventBridge</td>
+</tr>
+<tr>
+<td>SQL on ONE object</td>
+<td>S3 Select</td>
+</tr>
+<tr>
+<td>SQL across S3 data sets</td>
+<td>Athena</td>
+</tr>
+</tbody>
+</table>
+<p>S3's bucket policies are just Section 1's resource-based policies wearing a storage hat — and its classes ladder is the warm-up for the same cost-vs-speed reasoning you'll reuse on EBS, EFS, and Glacier-style questions everywhere else on the exam.</p>
+<hr />
+<h2>Section 3: EC2 — Elastic Compute Cloud  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>general purpose / balanced</td>
+<td>M family</td>
+</tr>
+<tr>
+<td>spiky, mostly idle / CPU credits</td>
+<td>T family (burstable)</td>
+</tr>
+<tr>
+<td>t3 slow after sustained load</td>
+<td>credits exhausted → M/C family or Unlimited mode</td>
+</tr>
+<tr>
+<td>bill increased during spike</td>
+<td>T Unlimited mode overage</td>
+</tr>
+<tr>
+<td>batch / encoding / HPC compute</td>
+<td>C family</td>
+</tr>
+<tr>
+<td>in-memory analytics / cache</td>
+<td>R family</td>
+</tr>
+<tr>
+<td>SAP HANA</td>
+<td>X family</td>
+</tr>
+<tr>
+<td>high local NVMe IOPS</td>
+<td>I family</td>
+</tr>
+<tr>
+<td>dense local HDD storage</td>
+<td>D family</td>
+</tr>
+<tr>
+<td>ML training</td>
+<td>P family (GPU)</td>
+</tr>
+<tr>
+<td>graphics / ML inference</td>
+<td>G family / Inf</td>
+</tr>
+<tr>
+<td>price-performance / cost / sustainability + ARM-friendly</td>
+<td>Graviton (g suffix, e.g. m7g)</td>
+</tr>
+<tr>
+<td>short-term, unpredictable, &lt; 1 year</td>
+<td>On-Demand</td>
+</tr>
+<tr>
+<td>steady 24/7 for 1–3 years</td>
+<td>Reserved Instance (up to 72%)</td>
+</tr>
+<tr>
+<td>RI but family may change</td>
+<td>Convertible RI (66%)</td>
+</tr>
+<tr>
+<td>guarantee capacity in an AZ</td>
+<td>Zonal RI / Capacity Reservation</td>
+</tr>
+<tr>
+<td>commit $/hr, any family/region + Fargate/Lambda</td>
+<td>Compute Savings Plan</td>
+</tr>
+<tr>
+<td>commit $/hr, one family one region, max discount</td>
+<td>EC2 Instance Savings Plan</td>
+</tr>
+<tr>
+<td>interruptible / fault-tolerant / cheapest (up to 90%)</td>
+<td>Spot (2-min warning)</td>
+</tr>
+<tr>
+<td>database / cannot tolerate interruption</td>
+<td>never Spot</td>
+</tr>
+<tr>
+<td>baseline + surge, optimize cost</td>
+<td>RI/SP baseline + Spot surge</td>
+</tr>
+<tr>
+<td>BYOL / per-socket / per-core licenses</td>
+<td>Dedicated Host</td>
+</tr>
+<tr>
+<td>hardware isolation only, cheaper</td>
+<td>Dedicated Instance</td>
+</tr>
+<tr>
+<td>lowest latency / HPC / same rack</td>
+<td>Cluster placement group</td>
+</tr>
+<tr>
+<td>few critical instances, isolate failures (max 7/AZ)</td>
+<td>Spread placement group</td>
+</tr>
+<tr>
+<td>Hadoop / Cassandra / Kafka at scale</td>
+<td>Partition placement group</td>
+</tr>
+<tr>
+<td>failover keeping same private IP (same AZ)</td>
+<td>move the ENI</td>
+</tr>
+<tr>
+<td>separate management network / dual-homed</td>
+<td>multiple ENIs</td>
+</tr>
+<tr>
+<td>public IP changed after stop/start</td>
+<td>Elastic IP</td>
+</tr>
+<tr>
+<td>avoid EIPs / static entry point best practice</td>
+<td>ELB + DNS or Global Accelerator</td>
+</tr>
+<tr>
+<td>run script once at launch</td>
+<td>user data (runs as root)</td>
+</tr>
+<tr>
+<td>instance info from inside / SSRF protection</td>
+<td>metadata at 169.254.169.254 / enforce IMDSv2</td>
+</tr>
+<tr>
+<td>preserve RAM state across stop</td>
+<td>Hibernate (RAM → encrypted EBS root)</td>
+</tr>
+</tbody>
+</table>
+<p>Every EC2 instance needs disks to boot from and store data on — that's EBS, EFS, and Instance Store, up next in Section 4.</p>
+<hr />
+<h2>Section 4: EBS, EFS &amp; Instance Store  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>random I/O / database / boot volume</td>
+<td>SSD (gp3 or io1/io2)</td>
+</tr>
+<tr>
+<td>large sequential / big data / throughput MB/s</td>
+<td>HDD (st1/sc1) — never bootable</td>
+</tr>
+<tr>
+<td>≤ 16,000 IOPS</td>
+<td>gp3</td>
+</tr>
+<tr>
+<td>&gt; 16,000 IOPS</td>
+<td>io1/io2</td>
+</tr>
+<tr>
+<td>256,000 IOPS / sub-millisecond</td>
+<td>io2 Block Express</td>
+</tr>
+<tr>
+<td>frequent sequential (logs, ETL)</td>
+<td>st1</td>
+</tr>
+<tr>
+<td>coldest, cheapest EBS</td>
+<td>sc1</td>
+</tr>
+<tr>
+<td>gp2 mentioned at all</td>
+<td>migrate to gp3 (~20% cheaper)</td>
+</tr>
+<tr>
+<td>more IOPS without more storage</td>
+<td>gp3 (independent provisioning)</td>
+</tr>
+<tr>
+<td>multiple instances, one block volume, same AZ</td>
+<td>io1/io2 Multi-Attach (max 16)</td>
+</tr>
+<tr>
+<td>root disk survives termination</td>
+<td>DeleteOnTermination = false</td>
+</tr>
+<tr>
+<td>new extra volume unusable</td>
+<td>format + mount + fstab</td>
+</tr>
+<tr>
+<td>move volume across AZ/region</td>
+<td>snapshot → (copy) → restore</td>
+</tr>
+<tr>
+<td>cheap rarely-restored snapshots</td>
+<td>Snapshot Archive (75% off, 24–72 hr restore)</td>
+</tr>
+<tr>
+<td>recover deleted snapshot</td>
+<td>Recycle Bin</td>
+</tr>
+<tr>
+<td>instant full performance from snapshot</td>
+<td>Fast Snapshot Restore (expensive)</td>
+</tr>
+<tr>
+<td>automate snapshot schedules</td>
+<td>Data Lifecycle Manager</td>
+</tr>
+<tr>
+<td>encrypt existing volume</td>
+<td>snapshot → copy-encrypted → restore</td>
+</tr>
+<tr>
+<td>shared files, many Linux instances, multi-AZ</td>
+<td>EFS (NFS, pay per GB used)</td>
+</tr>
+<tr>
+<td>shared files, Windows / SMB / Active Directory</td>
+<td>FSx for Windows (never EFS)</td>
+</tr>
+<tr>
+<td>HPC parallel file system</td>
+<td>FSx for Lustre</td>
+</tr>
+<tr>
+<td>thousands of concurrent EFS clients</td>
+<td>Max I/O performance mode</td>
+</tr>
+<tr>
+<td>EFS throughput default</td>
+<td>Elastic mode</td>
+</tr>
+<tr>
+<td>cut EFS cost on cold files</td>
+<td>lifecycle to IA / Archive</td>
+</tr>
+<tr>
+<td>fastest storage / temp / cache / scratch</td>
+<td>Instance Store (ephemeral)</td>
+</tr>
+<tr>
+<td>instance store + stop/terminate</td>
+<td>data gone (reboot survives)</td>
+</tr>
+<tr>
+<td>high IOPS + must persist</td>
+<td>io2 EBS, not instance store</td>
+</tr>
+<tr>
+<td>Cassandra/replicated data, local speed</td>
+<td>Instance Store is OK</td>
+</tr>
+</tbody>
+</table>
+<p>You now know where an instance keeps its data — next up, S3 takes storage out of the instance entirely and into the world of objects, buckets, and eleven nines of durability.</p>
+<hr />
+<h2>Section 5: Elastic Load Balancing &amp; Auto Scaling  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Path / host / header routing</td>
+<td>ALB</td>
+</tr>
+<tr>
+<td>HTTP, microservices, containers, Lambda target</td>
+<td>ALB</td>
+</tr>
+<tr>
+<td>WAF on a load balancer</td>
+<td>ALB (L7 only)</td>
+</tr>
+<tr>
+<td>UDP, extreme performance, millions req/s</td>
+<td>NLB</td>
+</tr>
+<tr>
+<td>Static IP / Elastic IP / whitelisting</td>
+<td>NLB (or Global Accelerator)</td>
+</tr>
+<tr>
+<td>PrivateLink endpoint service front</td>
+<td>NLB</td>
+</tr>
+<tr>
+<td>Third-party security appliances, GENEVE 6081</td>
+<td>GLB</td>
+</tr>
+<tr>
+<td>Classic Load Balancer</td>
+<td>Wrong answer</td>
+</tr>
+<tr>
+<td>Multiple TLS certs, one LB</td>
+<td>SNI</td>
+</tr>
+<tr>
+<td>Errors during scale-in</td>
+<td>Deregistration delay (draining)</td>
+</tr>
+<tr>
+<td>Uneven traffic across AZs</td>
+<td>Cross-zone LB (ALB free/on, NLB paid/off)</td>
+</tr>
+<tr>
+<td>Client IP behind ALB</td>
+<td>X-Forwarded-For</td>
+</tr>
+<tr>
+<td>"Keep CPU at X%" simply</td>
+<td>Target Tracking</td>
+</tr>
+<tr>
+<td>Known time spikes</td>
+<td>Scheduled scaling</td>
+</tr>
+<tr>
+<td>ML-forecasted scaling</td>
+<td>Predictive scaling</td>
+</tr>
+<tr>
+<td>ASG ignores app-level failures</td>
+<td>Enable ELB health checks on ASG</td>
+</tr>
+<tr>
+<td>Scale on job backlog</td>
+<td>SQS queue depth metric</td>
+</tr>
+<tr>
+<td>Instance-level failover</td>
+<td>ELB (in-path, instant)</td>
+</tr>
+<tr>
+<td>Region-level failover</td>
+<td>Route 53 (DNS, slower)</td>
+</tr>
+</tbody>
+</table>
+<p>One layer down from the load balancer sits the network it all lives in — subnets, gateways, and firewalls — which is exactly where Section 6 (VPC) picks up.</p>
+<hr />
+<h2>Section 6: VPC — Virtual Private Cloud  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public subnet definition</td>
+<td>Route to IGW</td>
+</tr>
+<tr>
+<td>Outbound-only internet for private subnet</td>
+<td>NAT Gateway (in a public subnet)</td>
+</tr>
+<tr>
+<td>NAT high availability</td>
+<td>One NAT Gateway per AZ</td>
+</tr>
+<tr>
+<td>NAT instance fix</td>
+<td>Disable source/dest check</td>
+</tr>
+<tr>
+<td>IPv6 outbound-only</td>
+<td>Egress-only IGW</td>
+</tr>
+<tr>
+<td>Reserved IPs per subnet</td>
+<td>5</td>
+</tr>
+<tr>
+<td>VPC CIDR size</td>
+<td>/16 to /28</td>
+</tr>
+<tr>
+<td>Block a specific IP</td>
+<td>NACL (deny)</td>
+</tr>
+<tr>
+<td>Stateful / instance-level</td>
+<td>Security Group</td>
+</tr>
+<tr>
+<td>Stateless / subnet-level / ephemeral ports</td>
+<td>NACL</td>
+</tr>
+<tr>
+<td>Tier-to-tier access control</td>
+<td>SG referencing another SG</td>
+</tr>
+<tr>
+<td>S3/DynamoDB private + free</td>
+<td>Gateway Endpoint</td>
+</tr>
+<tr>
+<td>Endpoint reachable from on-prem/peered VPC</td>
+<td>Interface Endpoint (PrivateLink)</td>
+</tr>
+<tr>
+<td>2–3 VPCs, full access</td>
+<td>VPC Peering (not transitive!)</td>
+</tr>
+<tr>
+<td>Many VPCs + VPN/DX, transitive hub</td>
+<td>Transit Gateway (RAM to share, only multicast)</td>
+</tr>
+<tr>
+<td>One service, overlapping CIDRs, SaaS</td>
+<td>PrivateLink (NLB + endpoint service)</td>
+</tr>
+<tr>
+<td>Traffic metadata, accept/reject</td>
+<td>Flow Logs</td>
+</tr>
+<tr>
+<td>Full packet capture</td>
+<td>Traffic Mirroring</td>
+</tr>
+<tr>
+<td>Most secure admin access</td>
+<td>SSM Session Manager</td>
+</tr>
+<tr>
+<td>One network, many accounts</td>
+<td>VPC Sharing via RAM</td>
+</tr>
+</tbody>
+</table>
+<p>You now own the network — next up are the roads leading into it from the outside world: Route 53, Direct Connect, and Site-to-Site VPN, plus the load balancers from Section 5 that stand at its public doors.</p>
+<hr />
+<h2>Section 7: Route 53  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword in question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Root/apex domain → ALB/CloudFront/S3</td>
+<td><strong>Alias record</strong></td>
+</tr>
+<tr>
+<td>name → name, NOT at apex</td>
+<td>CNAME</td>
+</tr>
+<tr>
+<td>"A/B test", "10% canary"</td>
+<td><strong>Weighted</strong></td>
+</tr>
+<tr>
+<td>"best performance", "lowest latency"</td>
+<td><strong>Latency</strong></td>
+</tr>
+<tr>
+<td>"active-passive", "DR site"</td>
+<td><strong>Failover</strong> + health check</td>
+</tr>
+<tr>
+<td>"users in country X get X content", compliance</td>
+<td><strong>Geolocation</strong> (+ Default record)</td>
+</tr>
+<tr>
+<td>"bias", "shift traffic share between regions"</td>
+<td><strong>Geoproximity</strong></td>
+</tr>
+<tr>
+<td>up to 8 healthy answers, DNS-level LB</td>
+<td><strong>Multi-Value</strong></td>
+</tr>
+<tr>
+<td>DNS only inside a VPC</td>
+<td><strong>Private hosted zone</strong></td>
+</tr>
+<tr>
+<td>health check a private endpoint</td>
+<td><strong>CloudWatch alarm-based check</strong></td>
+</tr>
+<tr>
+<td>combine many health checks</td>
+<td>Calculated health check</td>
+</tr>
+<tr>
+<td>instant multi-region failover, no DNS lag</td>
+<td><strong>Global Accelerator</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Route 53 hands out addresses and steps aside — but when the exam demands <em>instant</em> global failover with fixed IPs, you need something that stays in the path, which is exactly where Section 8's Global Accelerator picks up.</p>
+<hr />
+<h2>Section 8: CloudFront &amp; Global Accelerator  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword in question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>global static content, low latency</td>
+<td><strong>CloudFront</strong></td>
+</tr>
+<tr>
+<td>"S3 only via CloudFront", private bucket</td>
+<td><strong>OAC</strong> (OAI = legacy distractor)</td>
+</tr>
+<tr>
+<td>one paid file</td>
+<td><strong>Signed URL</strong></td>
+</tr>
+<tr>
+<td>whole paid library</td>
+<td><strong>Signed Cookies</strong></td>
+</tr>
+<tr>
+<td>block/allow countries</td>
+<td><strong>Geo Restriction</strong></td>
+</tr>
+<tr>
+<td>CloudFront custom cert</td>
+<td><strong>ACM in us-east-1</strong></td>
+</tr>
+<tr>
+<td>encrypt one sensitive field end-to-end</td>
+<td>Field-level encryption</td>
+</tr>
+<tr>
+<td>reduce origin load</td>
+<td>Longer TTL / better caching</td>
+</tr>
+<tr>
+<td>force-refresh cached files</td>
+<td>Invalidation (<code>/*</code>, costs money)</td>
+</tr>
+<tr>
+<td>UDP / gaming / VoIP / non-HTTP</td>
+<td><strong>Global Accelerator</strong></td>
+</tr>
+<tr>
+<td>fixed IPs for whitelisting</td>
+<td><strong>Global Accelerator</strong> (2 anycast IPs)</td>
+</tr>
+<tr>
+<td>instant failover, no DNS-cache lag</td>
+<td><strong>Global Accelerator</strong></td>
+</tr>
+<tr>
+<td>global UPLOADS to S3</td>
+<td><strong>S3 Transfer Acceleration</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Both of these services exist to get users to your data faster — but the data itself usually lives in a database, and how you make <em>that</em> fast and failure-proof is Section 9's RDS and Aurora.</p>
+<hr />
+<h2>Section 9: RDS &amp; Aurora  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword in question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>survive AZ failure, auto-failover</td>
+<td><strong>Multi-AZ</strong> (sync, 60–120s, DNS flip)</td>
+</tr>
+<tr>
+<td>standby serves reads</td>
+<td><strong>TRAP — never</strong></td>
+</tr>
+<tr>
+<td>scale reads, offload reporting</td>
+<td><strong>Read Replica</strong> (async, up to 15, manual promotion)</td>
+</tr>
+<tr>
+<td>replica auto-failover</td>
+<td><strong>TRAP — promotion is manual</strong></td>
+</tr>
+<tr>
+<td>same queries over and over</td>
+<td>ElastiCache (not a replica)</td>
+</tr>
+<tr>
+<td>Lambda + RDS connections</td>
+<td><strong>RDS Proxy</strong></td>
+</tr>
+<tr>
+<td>backups &gt; 35 days / "retain X years"</td>
+<td><strong>Manual snapshot</strong></td>
+</tr>
+<tr>
+<td>restore to any point in time (≤35 days)</td>
+<td>Automated backups / PITR</td>
+</tr>
+<tr>
+<td>encrypt existing DB</td>
+<td><strong>Snapshot → copy-encrypted → restore</strong></td>
+</tr>
+<tr>
+<td>OS access / custom engine</td>
+<td>EC2 or RDS Custom</td>
+</tr>
+<tr>
+<td>failover &lt;30s, 15 low-lag replicas, 128TB autogrow</td>
+<td><strong>Aurora</strong></td>
+</tr>
+<tr>
+<td>spiky / idle / unpredictable load</td>
+<td><strong>Aurora Serverless v2</strong></td>
+</tr>
+<tr>
+<td>cross-region DR, RPO ~1s, RTO &lt;1min</td>
+<td><strong>Aurora Global Database</strong></td>
+</tr>
+<tr>
+<td>instant prod copy for staging</td>
+<td><strong>Aurora Cloning</strong></td>
+</tr>
+<tr>
+<td>undo mistake fast, no restore</td>
+<td><strong>Aurora Backtrack</strong></td>
+</tr>
+</tbody>
+</table>
+<p>You now know how to keep the database standing and fast — but when the exam's read traffic is the <em>same</em> hot data thousands of times per second, even fifteen replicas is the wrong answer, and that's where caching with ElastiCache takes over.</p>
+<hr />
+<h2>Section 10: DynamoDB  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Serverless NoSQL, key-value, any scale</td>
+<td>DynamoDB</td>
+</tr>
+<tr>
+<td>Joins / complex SQL</td>
+<td>RDS or Aurora instead</td>
+</tr>
+<tr>
+<td>Spiky / unknown traffic</td>
+<td>On-Demand mode</td>
+</tr>
+<tr>
+<td>Steady, predictable traffic</td>
+<td>Provisioned (+ auto scaling)</td>
+</tr>
+<tr>
+<td>Microseconds, no code change</td>
+<td>DAX</td>
+</tr>
+<tr>
+<td>Multi-region active-active</td>
+<td>Global Tables (needs Streams)</td>
+</tr>
+<tr>
+<td>React to item changes</td>
+<td>Streams → Lambda</td>
+</tr>
+<tr>
+<td>Auto-expire items free</td>
+<td>TTL</td>
+</tr>
+<tr>
+<td>Query by another attribute, existing table</td>
+<td>GSI (LSI = creation-time trap)</td>
+</tr>
+<tr>
+<td>Atomic multi-item</td>
+<td>Transactions (2x cost)</td>
+</tr>
+<tr>
+<td>Restore to any second, 35 days</td>
+<td>PITR</td>
+</tr>
+<tr>
+<td>Item &gt; 400 KB</td>
+<td>S3 + pointer</td>
+</tr>
+<tr>
+<td>1 RCU</td>
+<td>1 strong or 2 eventual reads ≤ 4 KB</td>
+</tr>
+<tr>
+<td>1 WCU</td>
+<td>1 write ≤ 1 KB</td>
+</tr>
+</tbody>
+</table>
+<p>DynamoDB gives you millisecond answers forever — but when even milliseconds are too slow, you reach for the in-memory layer, and that's where ElastiCache (Section 11) picks up the story.</p>
+<hr />
+<h2>Section 11: ElastiCache  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Repeated identical reads hammering DB</td>
+<td>ElastiCache</td>
+</tr>
+<tr>
+<td>Leaderboard / ranking</td>
+<td>Redis sorted sets</td>
+</tr>
+<tr>
+<td>Sessions / stateless web tier</td>
+<td>Redis (or DynamoDB)</td>
+</tr>
+<tr>
+<td>Durability, failover, backup, pub/sub</td>
+<td>Redis</td>
+</tr>
+<tr>
+<td>Simplest, multithreaded, loss OK</td>
+<td>Memcached</td>
+</tr>
+<tr>
+<td>Never-stale cache</td>
+<td>Write-through</td>
+</tr>
+<tr>
+<td>Stale-tolerant, cache only hot data</td>
+<td>Lazy loading (+ TTL)</td>
+</tr>
+<tr>
+<td>Diverse/analytical read offload</td>
+<td>Read Replica</td>
+</tr>
+<tr>
+<td>DynamoDB + no code change</td>
+<td>DAX</td>
+</tr>
+<tr>
+<td>Microseconds</td>
+<td>Any in-memory cache (ElastiCache/DAX)</td>
+</tr>
+</tbody>
+</table>
+<p>You now own the "make reads fast" toolbox — next, Section 12 hands you the keyword zoo of specialty databases, where each engine exists to win exactly one kind of question.</p>
+<hr />
+<h2>Section 12: The Other Databases (keyword zoo)  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Data warehouse / OLAP / BI / petabyte</td>
+<td>Redshift</td>
+</tr>
+<tr>
+<td>Query S3 from Redshift, no loading</td>
+<td>Redshift Spectrum</td>
+</tr>
+<tr>
+<td>SQL on S3, serverless, ad-hoc / logs</td>
+<td>Athena</td>
+</tr>
+<tr>
+<td>Cut Athena cost</td>
+<td>Parquet/ORC + compress + partition</td>
+</tr>
+<tr>
+<td>Graph / social / fraud ring / recommendations</td>
+<td>Neptune</td>
+</tr>
+<tr>
+<td>Immutable verifiable ledger, centralized</td>
+<td>QLDB</td>
+</tr>
+<tr>
+<td>Decentralized, multi-party, no central authority</td>
+<td>Managed Blockchain</td>
+</tr>
+<tr>
+<td>Time-series / IoT / telemetry / metrics</td>
+<td>Timestream</td>
+</tr>
+<tr>
+<td>"MongoDB"</td>
+<td>DocumentDB</td>
+</tr>
+<tr>
+<td>"Cassandra"</td>
+<td>Keyspaces</td>
+</tr>
+<tr>
+<td>Full-text / fuzzy search, log dashboards</td>
+<td>OpenSearch</td>
+</tr>
+<tr>
+<td>Analytics choking prod OLTP DB</td>
+<td>Move it — Redshift</td>
+</tr>
+</tbody>
+</table>
+<p>That's every database in the toolbox sorted by screw head — now Section 13 turns to the thing that glues all these services together with code: Lambda.</p>
+<hr />
+<h2>Section 13: Lambda  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Job &gt; 15 minutes</td>
+<td>NOT Lambda → Batch / Fargate</td>
+</tr>
+<tr>
+<td>Divisible into &lt;15-min steps</td>
+<td>Step Functions</td>
+</tr>
+<tr>
+<td>CPU-bound slow function</td>
+<td>Increase memory</td>
+</tr>
+<tr>
+<td>Cold start latency</td>
+<td>Provisioned Concurrency (Pre-warmed)</td>
+</tr>
+<tr>
+<td>Protect downstream / cap invocations</td>
+<td>Reserved Concurrency (Restricted)</td>
+</tr>
+<tr>
+<td>Lambda + RDS</td>
+<td>RDS Proxy (+ VPC config)</td>
+</tr>
+<tr>
+<td>VPC Lambda lost internet</td>
+<td>NAT Gateway / VPC endpoints</td>
+</tr>
+<tr>
+<td>Async failures lost</td>
+<td>DLQ / failure destination</td>
+</tr>
+<tr>
+<td>SQS / Kinesis / DDB Streams</td>
+<td>Event Source Mapping (pull, batches)</td>
+</tr>
+<tr>
+<td>S3 / SNS / EventBridge</td>
+<td>Async push (2 retries)</td>
+</tr>
+<tr>
+<td>Serverless cron</td>
+<td>EventBridge schedule → Lambda</td>
+</tr>
+<tr>
+<td>Shared dependencies</td>
+<td>Layers</td>
+</tr>
+<tr>
+<td>Deps &gt; 250 MB</td>
+<td>Container image (10 GB)</td>
+</tr>
+<tr>
+<td>Function permissions</td>
+<td>Execution role</td>
+</tr>
+<tr>
+<td>Edge + network calls / JWT</td>
+<td>Lambda@Edge</td>
+</tr>
+<tr>
+<td>Edge header/URL tweak, cheapest</td>
+<td>CloudFront Functions</td>
+</tr>
+<tr>
+<td>Max runtime / memory / concurrency</td>
+<td>15 min / 10 GB / 1,000 default</td>
+</tr>
+</tbody>
+</table>
+<p>Lambda is the glue of every serverless diagram you've built so far — CloudFront to API Gateway to Lambda to DynamoDB — and with these four sections you now own that entire stack end to end.</p>
+<hr />
+<h2>Section 14: ECS, EKS &amp; Fargate  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"No server management" + containers</td>
+<td>Fargate</td>
+</tr>
+<tr>
+<td>"Already using Kubernetes" / "multi-cloud"</td>
+<td>EKS</td>
+</tr>
+<tr>
+<td>GPUs for containers</td>
+<td>EC2 launch type (never Fargate)</td>
+</tr>
+<tr>
+<td>Can't pull image / can't write logs</td>
+<td>Task Execution Role</td>
+</tr>
+<tr>
+<td>App AccessDenied to AWS service</td>
+<td>Task Role</td>
+</tr>
+<tr>
+<td>Recipe / blueprint</td>
+<td>Task Definition</td>
+</tr>
+<tr>
+<td>Keeps N copies running + ALB</td>
+<td>Service</td>
+</tr>
+<tr>
+<td>Image storage + CVE scanning</td>
+<td>ECR</td>
+</tr>
+<tr>
+<td>Per-task ENI + security group</td>
+<td>awsvpc mode</td>
+</tr>
+<tr>
+<td>Cheap interruptible Fargate</td>
+<td>Fargate Spot</td>
+</tr>
+<tr>
+<td>Multiple same-service tasks, one instance</td>
+<td>ALB dynamic port mapping</td>
+</tr>
+</tbody>
+</table>
+<p>Once your containers are running, the next question is: what if you don't even want to think about containers — you just want to hand AWS your code? That's Elastic Beanstalk, up next.</p>
+<hr />
+<h2>Section 15: Elastic Beanstalk  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Quickly deploy, no infra mgmt, KEEP control"</td>
+<td>Elastic Beanstalk</td>
+</tr>
+<tr>
+<td>Fastest deploy, downtime OK</td>
+<td>All at once</td>
+</tr>
+<tr>
+<td>No downtime, no extra cost</td>
+<td>Rolling</td>
+</tr>
+<tr>
+<td>No downtime, full capacity</td>
+<td>Rolling + additional batch</td>
+</tr>
+<tr>
+<td>Safest rollback (delete new fleet)</td>
+<td>Immutable</td>
+</tr>
+<tr>
+<td>DNS CNAME swap, instant rollback</td>
+<td>Blue/Green</td>
+</tr>
+<tr>
+<td>DB died with environment</td>
+<td>Create RDS OUTSIDE env (env vars)</td>
+</tr>
+<tr>
+<td>Move DB out of env</td>
+<td>Snapshot → standalone RDS</td>
+</tr>
+<tr>
+<td>SQS-driven background tier</td>
+<td>Worker environment</td>
+</tr>
+<tr>
+<td>Instance/env customization files</td>
+<td>.ebextensions</td>
+</tr>
+<tr>
+<td>Beanstalk pricing</td>
+<td>Free — pay for resources only</td>
+</tr>
+<tr>
+<td>Fine-grained IaC instead</td>
+<td>CloudFormation</td>
+</tr>
+</tbody>
+</table>
+<p>Beanstalk fronts your app with a load balancer automatically — but when your "app" is an API consumed by other programs, you want a smarter front door: API Gateway, next section.</p>
+<hr />
+<h2>Section 16: API Gateway  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Serverless REST API</td>
+<td>API GW + Lambda + DynamoDB</td>
+</tr>
+<tr>
+<td>API keys / usage plans / caching / WAF</td>
+<td>REST API (only)</td>
+</tr>
+<tr>
+<td>Lowest cost, simple proxy, JWT</td>
+<td>HTTP API</td>
+</tr>
+<tr>
+<td>Real-time / chat / live push</td>
+<td>WebSocket API</td>
+</tr>
+<tr>
+<td>Global clients</td>
+<td>Edge-Optimized endpoint</td>
+</tr>
+<tr>
+<td>VPC-only API</td>
+<td>Private endpoint (Interface Endpoint)</td>
+</tr>
+<tr>
+<td>AWS-service callers</td>
+<td>IAM / SigV4 auth</td>
+</tr>
+<tr>
+<td>App users sign in</td>
+<td>Cognito User Pool authorizer</td>
+</tr>
+<tr>
+<td>Custom/third-party tokens</td>
+<td>Lambda Authorizer</td>
+</tr>
+<tr>
+<td>429 errors</td>
+<td>Throttling (default 10,000 req/s)</td>
+</tr>
+<tr>
+<td>Backend &gt; 29 seconds</td>
+<td>Async: 202 + SQS/Step Functions</td>
+</tr>
+<tr>
+<td>Cache TTL default</td>
+<td>300 seconds</td>
+</tr>
+<tr>
+<td>Browser cross-domain error</td>
+<td>Enable CORS</td>
+</tr>
+</tbody>
+</table>
+<p>You just saw the fix for slow backends is "drop the work into a queue and walk away" — that queue, and the whole messaging toolbox around it, is the next section.</p>
+<hr />
+<h2>Section 17: SQS, SNS &amp; Kinesis — the messaging block  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decouple / buffer spikes</td>
+<td>SQS</td>
+</tr>
+<tr>
+<td>One message → one worker, PULL</td>
+<td>SQS</td>
+</tr>
+<tr>
+<td>Processed twice</td>
+<td>Increase visibility timeout (default 30s)</td>
+</tr>
+<tr>
+<td>Poison messages</td>
+<td>DLQ + MaxReceiveCount</td>
+</tr>
+<tr>
+<td>Empty-poll cost</td>
+<td>Long polling (20s)</td>
+</tr>
+<tr>
+<td>Strict order + exactly-once</td>
+<td>FIFO (300 / 3,000 msg/s)</td>
+</tr>
+<tr>
+<td>Message &gt; 256 KB</td>
+<td>S3 + pointer</td>
+</tr>
+<tr>
+<td>Retention</td>
+<td>4 days default / 14 max</td>
+</tr>
+<tr>
+<td>One → many, PUSH, instant</td>
+<td>SNS (stores nothing)</td>
+</tr>
+<tr>
+<td>Notify many, durably</td>
+<td>SNS → multiple SQS (fan-out)</td>
+</tr>
+<tr>
+<td>Multiple consumers, same data, replay</td>
+<td>Kinesis Data Streams (24h–365d)</td>
+</tr>
+<tr>
+<td>Shard throughput</td>
+<td>1 MB/s in, 2 MB/s out, order per shard</td>
+</tr>
+<tr>
+<td>Stream → S3, zero code, ~60s</td>
+<td>Firehose (S3/Redshift/OpenSearch/Splunk)</td>
+</tr>
+<tr>
+<td>MQTT / AMQP / JMS / RabbitMQ</td>
+<td>Amazon MQ</td>
+</tr>
+<tr>
+<td>Workers scale on queue depth</td>
+<td>ASG + CloudWatch queue metric</td>
+</tr>
+</tbody>
+</table>
+<p>Every architecture you've built so far — containers, Beanstalk apps, API Gateway backends — becomes bulletproof the moment you slide one of these buffers between its pieces; decoupling is the quiet superpower behind almost every correct SAA-C03 answer.</p>
+<hr />
+<h2>Section 18: EventBridge &amp; Step Functions  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Serverless cron / "nightly job"</td>
+<td>EventBridge scheduled rule</td>
+</tr>
+<tr>
+<td>SaaS events (Zendesk, Datadog)</td>
+<td>EventBridge partner event bus</td>
+</tr>
+<tr>
+<td>Content-based event filtering</td>
+<td>EventBridge rule</td>
+</tr>
+<tr>
+<td>Replay past events</td>
+<td>EventBridge archive + replay</td>
+</tr>
+<tr>
+<td>Cross-account event routing</td>
+<td>EventBridge cross-account bus</td>
+</tr>
+<tr>
+<td>Huge fan-out push / SMS / mobile</td>
+<td>SNS (not EventBridge)</td>
+</tr>
+<tr>
+<td>Multi-step workflow, retries, audit</td>
+<td>Step Functions</td>
+</tr>
+<tr>
+<td>Workflow &gt; 15 min</td>
+<td>Step Functions (not Lambda chain)</td>
+</tr>
+<tr>
+<td>Human approval / up to 1 year</td>
+<td>Standard workflow</td>
+</tr>
+<tr>
+<td>High-volume short IoT / &lt; 5 min</td>
+<td>Express workflow</td>
+</tr>
+<tr>
+<td>For-each over items</td>
+<td>Map state</td>
+</tr>
+<tr>
+<td>Branching logic</td>
+<td>Choice state</td>
+</tr>
+<tr>
+<td>Backoff retries, no code</td>
+<td>Built-in Retry</td>
+</tr>
+</tbody>
+</table>
+<p>EventBridge decides <em>which</em> work should happen when an event arrives; Step Functions makes sure multi-step work <em>finishes correctly</em> — and next we meet the services that watch everything else: CloudWatch, CloudTrail, and Config.</p>
+<hr />
+<h2>Section 19: CloudWatch, CloudTrail &amp; AWS Config  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Performance, health, alarms</td>
+<td>CloudWatch</td>
+</tr>
+<tr>
+<td>Who did what / API audit</td>
+<td>CloudTrail</td>
+</tr>
+<tr>
+<td>Config history / compliance</td>
+<td>AWS Config</td>
+</tr>
+<tr>
+<td>EC2 memory or disk-space metric</td>
+<td>CloudWatch agent (not default)</td>
+</tr>
+<tr>
+<td>Count log pattern → alarm</td>
+<td>Metric filter</td>
+</tr>
+<tr>
+<td>Query logs interactively</td>
+<td>Logs Insights</td>
+</tr>
+<tr>
+<td>Real-time log streaming</td>
+<td>Subscription filter → Kinesis/Lambda</td>
+</tr>
+<tr>
+<td>Too many alarms / noise</td>
+<td>Composite alarm</td>
+</tr>
+<tr>
+<td>S3 object-level "who"</td>
+<td>CloudTrail data events (opt-in)</td>
+</tr>
+<tr>
+<td>Logs beyond 90 days</td>
+<td>Trail → S3, multi-region</td>
+</tr>
+<tr>
+<td>Tamper-proof logs</td>
+<td>Log file integrity validation</td>
+</tr>
+<tr>
+<td>Unusual API spike</td>
+<td>CloudTrail Insights</td>
+</tr>
+<tr>
+<td>Auto-fix noncompliance</td>
+<td>Config + SSM remediation</td>
+</tr>
+<tr>
+<td>PREVENT actions</td>
+<td>SCP (never Config)</td>
+</tr>
+<tr>
+<td>Trace across microservices</td>
+<td>X-Ray</td>
+</tr>
+</tbody>
+</table>
+<p>Now you know who's watching the house — next comes who holds the keys: KMS and CloudHSM.</p>
+<hr />
+<h2>Section 20: KMS &amp; CloudHSM  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Audit every key use</td>
+<td>KMS + CloudTrail</td>
+</tr>
+<tr>
+<td>Free, AWS-rotated key</td>
+<td>AWS-managed key</td>
+</tr>
+<tr>
+<td>Your policies, $1/mo, yearly rotation</td>
+<td>Customer-managed key</td>
+</tr>
+<tr>
+<td>Encrypt &gt; 4KB</td>
+<td>Envelope encryption / GenerateDataKey</td>
+</tr>
+<tr>
+<td>Delete key now</td>
+<td>Impossible — 7–30 day wait (disable instead)</td>
+</tr>
+<tr>
+<td>Encrypt/decrypt across Regions</td>
+<td>Multi-Region keys</td>
+</tr>
+<tr>
+<td>Cut KMS costs on S3</td>
+<td>S3 Bucket Key</td>
+</tr>
+<tr>
+<td>FIPS 140-2 Level 3</td>
+<td>CloudHSM</td>
+</tr>
+<tr>
+<td>"AWS cannot see keys" / dedicated hardware</td>
+<td>CloudHSM</td>
+</tr>
+<tr>
+<td>SSL offload / own CA</td>
+<td>CloudHSM</td>
+</tr>
+<tr>
+<td>Access needs key policy AND IAM</td>
+<td>Both must allow</td>
+</tr>
+</tbody>
+</table>
+<p>You now hold the keys — next, the safes where applications keep their passwords: Secrets Manager and Parameter Store.</p>
+<hr />
+<h2>Section 21: Secrets Manager &amp; Parameter Store  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Automatic rotation" (any phrasing)</td>
+<td>Secrets Manager</td>
+</tr>
+<tr>
+<td>RDS/Redshift/DocumentDB creds</td>
+<td>Secrets Manager (built-in rotation Lambda)</td>
+</tr>
+<tr>
+<td>Cheapest / free config store</td>
+<td>Parameter Store standard</td>
+</tr>
+<tr>
+<td>Hierarchical paths /prod/...</td>
+<td>Parameter Store</td>
+</tr>
+<tr>
+<td>Cross-account secret sharing</td>
+<td>Secrets Manager</td>
+</tr>
+<tr>
+<td>Encrypted param, free</td>
+<td>Parameter Store SecureString</td>
+</tr>
+<tr>
+<td>&gt; 8KB secret</td>
+<td>Secrets Manager (64KB)</td>
+</tr>
+<tr>
+<td>Hardcoded password fix</td>
+<td>Secrets Manager + IAM role runtime fetch</td>
+</tr>
+<tr>
+<td>Rotation without downtime</td>
+<td>Secrets Manager</td>
+</tr>
+<tr>
+<td>$0.40/secret/month</td>
+<td>Secrets Manager</td>
+</tr>
+</tbody>
+</table>
+<p>Keys from Section 20 encrypt these secrets, CloudTrail from Section 19 audits every peek at them — the monitoring, key, and secret stories all click together, and that's exactly how the exam will test you.</p>
+<hr />
+<h2>Section 22: WAF, Shield &amp; the Security Service Zoo  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQLi / XSS / HTTP filtering</td>
+<td>WAF</td>
+</tr>
+<tr>
+<td>Rate limit per IP</td>
+<td>WAF rate-based rule</td>
+</tr>
+<tr>
+<td>Test rule without blocking</td>
+<td>WAF Count mode</td>
+</tr>
+<tr>
+<td>WAF attach points</td>
+<td>CloudFront, ALB, API GW, AppSync, Cognito (never NLB/EC2)</td>
+</tr>
+<tr>
+<td>Free automatic DDoS (L3/L4)</td>
+<td>Shield Standard</td>
+</tr>
+<tr>
+<td>L7 DDoS / DRT / cost protection</td>
+<td>Shield Advanced ($3k/mo)</td>
+</tr>
+<tr>
+<td>Security policies across org, auto for new accounts</td>
+<td>Firewall Manager (needs Organizations + Config)</td>
+</tr>
+<tr>
+<td>Inspect ALL VPC traffic L3–L7</td>
+<td>Network Firewall</td>
+</tr>
+<tr>
+<td>Cryptomining / odd API calls / no agents</td>
+<td>GuardDuty</td>
+</tr>
+<tr>
+<td>PII in S3</td>
+<td>Macie</td>
+</tr>
+<tr>
+<td>CVEs on EC2/ECR/Lambda</td>
+<td>Inspector</td>
+</tr>
+<tr>
+<td>One findings dashboard + compliance checks</td>
+<td>Security Hub</td>
+</tr>
+<tr>
+<td>Root cause after a finding</td>
+<td>Detective</td>
+</tr>
+<tr>
+<td>SOC/PCI/ISO reports for auditors</td>
+<td>Artifact</td>
+</tr>
+</tbody>
+</table>
+<p>You've now got the security crew sorted — next up, the service that decides who your app's <em>users</em> even are: Cognito.</p>
+<hr />
+<h2>Section 23: Cognito  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sign-up / sign-in / user directory</td>
+<td>User Pools</td>
+</tr>
+<tr>
+<td>JWT tokens</td>
+<td>User Pools</td>
+</tr>
+<tr>
+<td>Social login (Google/Facebook/Apple), SAML</td>
+<td>User Pools (federation)</td>
+</tr>
+<tr>
+<td>Hosted UI, MFA</td>
+<td>User Pools</td>
+</tr>
+<tr>
+<td>API Gateway / ALB authorizer</td>
+<td>User Pool authorizer</td>
+</tr>
+<tr>
+<td>Temporary AWS credentials for app users</td>
+<td>Identity Pools (via STS)</td>
+</tr>
+<tr>
+<td>Direct app access to S3/DynamoDB</td>
+<td>Identity Pools</td>
+</tr>
+<tr>
+<td>Guest / unauthenticated access</td>
+<td>Identity Pools</td>
+</tr>
+<tr>
+<td>Each user only their own folder</td>
+<td>Identity Pool + IAM policy variables</td>
+</tr>
+<tr>
+<td>Employees SSO to AWS accounts</td>
+<td>IAM Identity Center (never Cognito)</td>
+</tr>
+<tr>
+<td>Memory hook</td>
+<td>User Pool = login box (JWT); Identity Pool = exchange desk (creds)</td>
+</tr>
+</tbody>
+</table>
+<p>Cognito handles your app's <em>customers</em> — but when the identities live in a corporate Active Directory, you're in the next section's territory: Directory Services.</p>
+<hr />
+<h2>Section 24: Directory Services  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full AD features in AWS</td>
+<td>Managed Microsoft AD</td>
+</tr>
+<tr>
+<td>Trust relationship with on-prem</td>
+<td>Managed Microsoft AD (two-way trust)</td>
+</tr>
+<tr>
+<td>MFA + domain join</td>
+<td>Managed Microsoft AD</td>
+</tr>
+<tr>
+<td>No identities stored in cloud</td>
+<td>AD Connector</td>
+</tr>
+<tr>
+<td>Proxy / redirect auth to on-prem</td>
+<td>AD Connector</td>
+</tr>
+<tr>
+<td>Low cost, basic LDAP, small org</td>
+<td>Simple AD</td>
+</tr>
+<tr>
+<td>No trust, no MFA</td>
+<td>Simple AD's limits</td>
+</tr>
+<tr>
+<td>FSx Windows / WorkSpaces / RDS SQL Server</td>
+<td>All need a directory — pick from the three</td>
+</tr>
+<tr>
+<td>Memory hook</td>
+<td>Full copy w/ trust / phone line / budget clone</td>
+</tr>
+</tbody>
+</table>
+<p>Directories solve <em>who</em> on-prem users are in the cloud — next we solve where their <em>files</em> live, with the hybrid storage bridge crew: Storage Gateway, DataSync, and Transfer Family.</p>
+<hr />
+<h2>Section 25: Storage Gateway, DataSync &amp; Transfer Family  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Replace tape backups</td>
+<td>Tape Gateway (VTL → S3/Glacier)</td>
+</tr>
+<tr>
+<td>NAS replacement, files in S3, local access</td>
+<td>S3 File Gateway</td>
+</tr>
+<tr>
+<td>SMB cache for FSx Windows</td>
+<td>FSx File Gateway</td>
+</tr>
+<tr>
+<td>Extend on-prem capacity, primary in cloud</td>
+<td>Volume Gateway — Cached</td>
+</tr>
+<tr>
+<td>Full dataset local + snapshots to cloud</td>
+<td>Volume Gateway — Stored</td>
+</tr>
+<tr>
+<td>Migrate / scheduled sync, preserve permissions</td>
+<td>DataSync</td>
+</tr>
+<tr>
+<td>Bandwidth throttling, on-prem agent</td>
+<td>DataSync</td>
+</tr>
+<tr>
+<td>S3 ↔ EFS ↔ FSx transfers</td>
+<td>DataSync</td>
+</tr>
+<tr>
+<td>Partners upload via SFTP/FTPS/FTP</td>
+<td>Transfer Family (never SFTP-on-EC2)</td>
+</tr>
+<tr>
+<td>Ongoing hybrid access vs. one-time move</td>
+<td>Storage Gateway vs. DataSync</td>
+</tr>
+<tr>
+<td>Offline / massive data, no bandwidth</td>
+<td>Snow Family (Section 27)</td>
+</tr>
+</tbody>
+</table>
+<p>That's the online bridge to the cloud sorted — when the pipe is too small for the payload, you put the data on a truck, and that's where the Snow Family rolls in.</p>
+<hr />
+<h2>Section 26: FSx Family  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows / SMB / NTFS / AD / .NET</td>
+<td>FSx for Windows File Server</td>
+</tr>
+<tr>
+<td>HPC / ML training / rendering / GB/s</td>
+<td>FSx for Lustre</td>
+</tr>
+<tr>
+<td>Process S3 data as files</td>
+<td>FSx for Lustre (S3 integration)</td>
+</tr>
+<tr>
+<td>Temporary + cheapest Lustre</td>
+<td>Scratch deployment</td>
+</tr>
+<tr>
+<td>Long-term Lustre</td>
+<td>Persistent deployment</td>
+</tr>
+<tr>
+<td>NetApp / SnapMirror</td>
+<td>FSx for NetApp ONTAP</td>
+</tr>
+<tr>
+<td>NFS + SMB + iSCSI together</td>
+<td>FSx for NetApp ONTAP</td>
+</tr>
+<tr>
+<td>ZFS</td>
+<td>FSx for OpenZFS</td>
+</tr>
+<tr>
+<td>Plain Linux shared storage</td>
+<td>EFS (not FSx at all)</td>
+</tr>
+</tbody>
+</table>
+<p>FSx moves files at specialty speed — but when the data is too big to move over a wire at all, you put it on a truck, which is exactly where the Snow Family comes in.</p>
+<hr />
+<h2>Section 27: Snow Family  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transfer would take &gt; 1 week</td>
+<td>Snow family</td>
+</tr>
+<tr>
+<td>8–14 TB, tiny/rugged/edge</td>
+<td>Snowcone</td>
+</tr>
+<tr>
+<td>50–500 TB migration</td>
+<td>Snowball Edge Storage Optimized</td>
+</tr>
+<tr>
+<td>Process data offline / GPU at edge</td>
+<td>Snowball Edge Compute Optimized</td>
+</tr>
+<tr>
+<td>&gt; 10 PB, up to 100 PB</td>
+<td>Snowmobile</td>
+</tr>
+<tr>
+<td>Straight to Glacier?</td>
+<td>No — S3 first + lifecycle rule</td>
+</tr>
+<tr>
+<td>Encryption on device</td>
+<td>KMS, automatic</td>
+</tr>
+<tr>
+<td>GUI for Snow devices</td>
+<td>OpsHub</td>
+</tr>
+<tr>
+<td>Preinstalled DataSync agent</td>
+<td>Snowcone</td>
+</tr>
+</tbody>
+</table>
+<p>Once your data (and everything else) is in AWS, you'll want to build environments the same way twice without clicking — that's CloudFormation's whole reason to exist.</p>
+<hr />
+<h2>Section 28: CloudFormation  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preview changes before update</td>
+<td>Change Sets</td>
+</tr>
+<tr>
+<td>Many accounts + regions, one template</td>
+<td>StackSets</td>
+</tr>
+<tr>
+<td>Keep data on stack delete</td>
+<td>DeletionPolicy Retain / Snapshot</td>
+</tr>
+<tr>
+<td>Detect manual console edits</td>
+<td>Drift Detection</td>
+</tr>
+<tr>
+<td>Infra in Python/TypeScript</td>
+<td>CDK</td>
+</tr>
+<tr>
+<td>Protect resource during updates</td>
+<td>Stack Policy</td>
+</tr>
+<tr>
+<td>Reusable template components</td>
+<td>Nested Stacks</td>
+</tr>
+<tr>
+<td>Share values between stacks</td>
+<td>Outputs + Export / ImportValue</td>
+</tr>
+<tr>
+<td>Only required template section</td>
+<td>Resources</td>
+</tr>
+<tr>
+<td>Failed creation</td>
+<td>Automatic rollback (default)</td>
+</tr>
+</tbody>
+</table>
+<p>You now know how to stamp out infrastructure across many accounts — next comes the question of who governs all those accounts, which is Organizations and Control Tower territory.</p>
+<hr />
+<h2>Section 29: AWS Organizations &amp; Control Tower  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Block actions org-wide / by OU</td>
+<td>SCP</td>
+</tr>
+<tr>
+<td>SCP grants permissions?</td>
+<td>Never — ceiling only (needs IAM allow too)</td>
+</tr>
+<tr>
+<td>SCP vs management account</td>
+<td>Doesn't apply — exempt</td>
+</tr>
+<tr>
+<td>One bill, shared RI/SP discounts</td>
+<td>Consolidated billing</td>
+</tr>
+<tr>
+<td>Automated governed multi-account setup</td>
+<td>Control Tower</td>
+</tr>
+<tr>
+<td>Self-service standardized new accounts</td>
+<td>Account Factory</td>
+</tr>
+<tr>
+<td>Preventive guardrail</td>
+<td>SCP (blocks)</td>
+</tr>
+<tr>
+<td>Detective guardrail</td>
+<td>Config rule (flags)</td>
+</tr>
+<tr>
+<td>Share subnets / TGW / resolver rules</td>
+<td>RAM</td>
+</tr>
+<tr>
+<td>Admin denied in member account</td>
+<td>Check the SCP</td>
+</tr>
+</tbody>
+</table>
+<p>Governance says which accounts may do what — the next layer down is letting teams safely launch only pre-approved infrastructure, which is Service Catalog's job.</p>
+<hr />
+<h2>Section 30: Service Catalog &amp; Trusted Advisor  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Self-service approved stacks, minimal IAM</td>
+<td>Service Catalog</td>
+</tr>
+<tr>
+<td>Product / portfolio</td>
+<td>Service Catalog terms (CFN template / group of products)</td>
+</tr>
+<tr>
+<td>Idle / unused / unattached resources</td>
+<td>Trusted Advisor (Cost)</td>
+</tr>
+<tr>
+<td>Approaching quota warning</td>
+<td>Trusted Advisor (Service Limits)</td>
+</tr>
+<tr>
+<td>Open SGs, root MFA check</td>
+<td>Trusted Advisor (Security)</td>
+</tr>
+<tr>
+<td>Full checks locked</td>
+<td>Business/Enterprise support plan</td>
+</tr>
+<tr>
+<td>Five pillars</td>
+<td>Cost, Performance, Security, Fault Tolerance, Service Limits</td>
+</tr>
+</tbody>
+</table>
+<p>Trusted Advisor tells you the bill <em>could</em> be smaller — the cost management tool zoo in the next section is how you actually see, alert on, and shrink it.</p>
+<hr />
+<h2>Section 31: Cost Management Tools  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Visualize / analyze spend, forecast</td>
+<td>Cost Explorer</td>
+</tr>
+<tr>
+<td>Alert at % of budget</td>
+<td>AWS Budgets</td>
+</tr>
+<tr>
+<td>Most detailed / line items / SQL</td>
+<td>CUR + Athena</td>
+</tr>
+<tr>
+<td>Unusual spike, ML detection</td>
+<td>Cost Anomaly Detection</td>
+</tr>
+<tr>
+<td>Rightsize EC2/EBS/Lambda</td>
+<td>Compute Optimizer</td>
+</tr>
+<tr>
+<td>Cost per team / chargeback</td>
+<td>Cost Allocation Tags (activate first)</td>
+</tr>
+<tr>
+<td>RI / Savings Plan buy advice</td>
+<td>Cost Explorer</td>
+</tr>
+<tr>
+<td>Custom internal billing views</td>
+<td>Billing Conductor</td>
+</tr>
+</tbody>
+</table>
+<p>That closes out the governance-and-cost corner of the exam — from here, every scenario about "who pays, who sees, who's warned" should feel like matching verbs to vending machines.</p>
+<hr />
+<h2>Section 32: Direct Connect &amp; VPN  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Encrypted tunnel, quick, cheap</td>
+<td>Site-to-Site VPN</td>
+</tr>
+<tr>
+<td>VGW + CGW</td>
+<td>Site-to-Site VPN components (AWS + customer side)</td>
+</tr>
+<tr>
+<td>Consistent bandwidth, dedicated</td>
+<td>Direct Connect</td>
+</tr>
+<tr>
+<td>Setup in hours</td>
+<td>VPN</td>
+</tr>
+<tr>
+<td>Setup in weeks–months</td>
+<td>Direct Connect</td>
+</tr>
+<tr>
+<td>Encrypt Direct Connect</td>
+<td>VPN over DX</td>
+</tr>
+<tr>
+<td>Cost-effective DX backup</td>
+<td>Site-to-Site VPN</td>
+</tr>
+<tr>
+<td>One DX → many VPCs/regions</td>
+<td>Direct Connect Gateway</td>
+</tr>
+<tr>
+<td>Remote workers → VPC</td>
+<td>Client VPN</td>
+</tr>
+<tr>
+<td>Private VIF / Public VIF / Transit VIF</td>
+<td>VPC / public services / Transit Gateway</td>
+</tr>
+</tbody>
+</table>
+<p>You now know how ONE office connects to AWS — next up, what happens when dozens of VPCs and offices all need to talk to each other without a wiring nightmare: Transit Gateway.</p>
+<hr />
+<h2>Section 33: Transit Gateway  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Many VPCs + on-prem, central hub</td>
+<td>Transit Gateway</td>
+</tr>
+<tr>
+<td>Transitive routing</td>
+<td>Transit Gateway (peering can't)</td>
+</tr>
+<tr>
+<td>n(n-1)/2 peering explosion</td>
+<td>Transit Gateway</td>
+</tr>
+<tr>
+<td>Multicast</td>
+<td>Transit Gateway (only one)</td>
+</tr>
+<tr>
+<td>Isolate prod/dev at the hub</td>
+<td>TGW route tables</td>
+</tr>
+<tr>
+<td>Cross-account TGW</td>
+<td>Share via AWS RAM</td>
+</tr>
+<tr>
+<td>Cross-region hubs</td>
+<td>TGW peering</td>
+</tr>
+<tr>
+<td>DX into TGW</td>
+<td>Transit VIF</td>
+</tr>
+<tr>
+<td>Only 2–3 VPCs, cheapest</td>
+<td>VPC peering</td>
+</tr>
+<tr>
+<td>Expose one service, no network merge</td>
+<td>PrivateLink (not TGW)</td>
+</tr>
+</tbody>
+</table>
+<p>That's the plumbing done — next we zoom all the way out to how AWS wants you to <em>think</em> about architecture: the Well-Architected Framework.</p>
+<hr />
+<h2>Section 34: Well-Architected Framework  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IaC, small reversible changes</td>
+<td>Operational Excellence (CloudFormation)</td>
+</tr>
+<tr>
+<td>Least privilege, encrypt everywhere</td>
+<td>Security (IAM, KMS, GuardDuty)</td>
+</tr>
+<tr>
+<td>Survive failure, stop guessing capacity</td>
+<td>Reliability (Multi-AZ, ASG, Route 53)</td>
+</tr>
+<tr>
+<td>Right tool, serverless-first, edge</td>
+<td>Performance Efficiency (Lambda, CloudFront)</td>
+</tr>
+<tr>
+<td>Pay for what you use, measure spend</td>
+<td>Cost Optimization (Cost Explorer, Savings Plans, Spot)</td>
+</tr>
+<tr>
+<td>Maximize utilization, Graviton</td>
+<td>Sustainability</td>
+</tr>
+<tr>
+<td>Free best-practices review</td>
+<td>Well-Architected Tool</td>
+</tr>
+<tr>
+<td>"MOST cost-effective / LEAST overhead"</td>
+<td>The qualifier picks between two working answers</td>
+</tr>
+</tbody>
+</table>
+<p>Keep those qualifiers in your peripheral vision — they matter most in the next section's territory: disaster recovery, where cost versus recovery speed <em>is</em> the whole question.</p>
+<hr />
+<h2>Section 35: Disaster Recovery  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max data loss</td>
+<td>RPO</td>
+</tr>
+<tr>
+<td>Max downtime</td>
+<td>RTO</td>
+</tr>
+<tr>
+<td>Cheapest, RTO hours</td>
+<td>Backup &amp; Restore</td>
+</tr>
+<tr>
+<td>DB replicated, servers off</td>
+<td>Pilot Light</td>
+</tr>
+<tr>
+<td>Scaled-down copy running</td>
+<td>Warm Standby</td>
+</tr>
+<tr>
+<td>Zero RPO/RTO, both live</td>
+<td>Multi-Site Active-Active</td>
+</tr>
+<tr>
+<td>RPO 1s / RTO &lt;1 min relational</td>
+<td>Aurora Global Database</td>
+</tr>
+<tr>
+<td>Multi-region multi-active NoSQL</td>
+<td>DynamoDB Global Tables</td>
+</tr>
+<tr>
+<td>Centralized cross-service backups</td>
+<td>AWS Backup (+ Vault Lock)</td>
+</tr>
+<tr>
+<td>Replicate on-prem servers for DR</td>
+<td>Elastic Disaster Recovery (DRS)</td>
+</tr>
+<tr>
+<td>DNS failover to DR region</td>
+<td>Route 53 failover routing</td>
+</tr>
+</tbody>
+</table>
+<p>You now hold the full toolbox — time to sharpen it against the exam's favorite tricks: the classic traps and must-know combos.</p>
+<hr />
+<h2>Section 36: Classic Traps &amp; Must-Know Combos  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Apex domain</td>
+<td>Alias record</td>
+</tr>
+<tr>
+<td>Deny traffic</td>
+<td>NACL (never SG)</td>
+</tr>
+<tr>
+<td>Free S3 access from VPC</td>
+<td>Gateway Endpoint</td>
+</tr>
+<tr>
+<td>&gt;15 minutes</td>
+<td>Not Lambda (Fargate/Batch)</td>
+</tr>
+<tr>
+<td>Windows file share</td>
+<td>FSx for Windows</td>
+</tr>
+<tr>
+<td>Transitive routing</td>
+<td>Transit Gateway</td>
+</tr>
+<tr>
+<td>Encrypt existing volume/DB</td>
+<td>Snapshot dance</td>
+</tr>
+<tr>
+<td>FIPS Level 3</td>
+<td>CloudHSM</td>
+</tr>
+<tr>
+<td>Static IP load balancer</td>
+<td>NLB</td>
+</tr>
+<tr>
+<td>UDP acceleration</td>
+<td>Global Accelerator</td>
+</tr>
+<tr>
+<td>Auto-rotation</td>
+<td>Secrets Manager</td>
+</tr>
+<tr>
+<td>HA NAT</td>
+<td>One per AZ</td>
+</tr>
+<tr>
+<td>Durable fan-out</td>
+<td>SNS → SQS</td>
+</tr>
+<tr>
+<td>Encrypted DX</td>
+<td>VPN over DX</td>
+</tr>
+</tbody>
+</table>
+<p>Traps mapped, combos memorized — one last sweep remains: the small-but-tested gap-fill services that each show up for one or two easy points.</p>
+<hr />
+<h2>Section 37: The Gap-Fill Services (small but tested)  ·  <a href="#">guide</a></h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MQTT / AMQP / JMS, minimal rewrite</td>
+<td>Amazon MQ</td>
+</tr>
+<tr>
+<td>Lift-and-shift servers (rehost)</td>
+<td>MGN</td>
+</tr>
+<tr>
+<td>DR replication, RPO seconds</td>
+<td>Elastic Disaster Recovery (DRS)</td>
+</tr>
+<tr>
+<td>DB migration, different engines</td>
+<td>DMS + SCT</td>
+</tr>
+<tr>
+<td>Free auto-renewing TLS certs</td>
+<td>ACM</td>
+</tr>
+<tr>
+<td>CloudFront certificate region</td>
+<td>us-east-1 (always)</td>
+</tr>
+<tr>
+<td>IPv6 outbound-only</td>
+<td>Egress-only Internet Gateway</td>
+</tr>
+<tr>
+<td>On-prem → VPC DNS</td>
+<td>Resolver inbound endpoint</td>
+</tr>
+<tr>
+<td>VPC → on-prem DNS</td>
+<td>Resolver outbound endpoint</td>
+</tr>
+<tr>
+<td>AWS racks in your datacenter</td>
+<td>Outposts</td>
+</tr>
+<tr>
+<td>Single-digit ms to a metro city</td>
+<td>Local Zones</td>
+</tr>
+<tr>
+<td>5G edge</td>
+<td>Wavelength</td>
+</tr>
+<tr>
+<td>Serverless ETL + catalog</td>
+<td>Glue</td>
+</tr>
+<tr>
+<td>Spark / Hadoop</td>
+<td>EMR</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td>MSK</td>
+</tr>
+<tr>
+<td>BI dashboards</td>
+<td>QuickSight</td>
+</tr>
+<tr>
+<td>Data lake + fine-grained access</td>
+<td>Lake Formation</td>
+</tr>
+<tr>
+<td>SaaS → S3</td>
+<td>AppFlow</td>
+</tr>
+<tr>
+<td>Images/video analysis</td>
+<td>Rekognition</td>
+</tr>
+<tr>
+<td>Speech → text / text → speech</td>
+<td>Transcribe / Polly</td>
+</tr>
+<tr>
+<td>Sentiment</td>
+<td>Comprehend</td>
+</tr>
+<tr>
+<td>Scanned forms/invoices</td>
+<td>Textract</td>
+</tr>
+<tr>
+<td>Intelligent doc search</td>
+<td>Kendra</td>
+</tr>
+<tr>
+<td>Recommendations / forecasts / chatbots</td>
+<td>Personalize / Forecast / Lex</td>
+</tr>
+<tr>
+<td>Custom ML</td>
+<td>SageMaker</td>
+</tr>
+<tr>
+<td>No-SSH access / fleet scripts / auto-patching</td>
+<td>Session Manager / Run Command / Patch Manager</td>
+</tr>
+<tr>
+<td>Batch jobs &gt; 15 min, Docker</td>
+<td>AWS Batch</td>
+</tr>
+<tr>
+<td>GraphQL, offline sync</td>
+<td>AppSync</td>
+</tr>
+<tr>
+<td>Full-stack quickstart</td>
+<td>Amplify</td>
+</tr>
+<tr>
+<td>Application emails</td>
+<td>SES</td>
+</tr>
+<tr>
+<td>Bulk ops on existing S3 objects</td>
+<td>S3 Batch Operations</td>
+</tr>
+<tr>
+<td>Instant prod DB copy for testing</td>
+<td>Aurora cloning</td>
+</tr>
+<tr>
+<td>Distributed tracing</td>
+<td>X-Ray</td>
+</tr>
+<tr>
+<td>Compliance reports for auditors</td>
+<td>AWS Artifact</td>
+</tr>
+</tbody>
+</table>
+<p>That's the last jar on the spice rack — you've now covered the whole SAA-C03 kitchen. Sleep well, read the last sentence first, and go collect your certificate.</p></section><section id="traps"><h1>Section 36: Classic Traps &amp; Must-Know Combos</h1>
+<h2>The idea</h2>
+<p>The SAA-C03 isn't trying to see if you've <em>heard</em> of services — it's checking whether you know where the <strong>tripwires</strong> are. Think of this section as the <strong>map of the minefield</strong>: every trap below is a wrong answer that <em>sounds</em> right and appears on the exam over and over, paired with the truth that defuses it. Walk this list twice before exam day and you'll feel the wires before you step on them.</p>
+<h2>The greatest-hits trap list</h2>
+<table>
+<thead>
+<tr>
+<th>THE trap</th>
+<th>The truth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Read from the RDS Multi-AZ standby to offload queries"</td>
+<td><strong>NO</strong> — the standby is invisible; use <strong>read replicas</strong> for reads</td>
+</tr>
+<tr>
+<td>"CNAME record at the zone apex (example.com)"</td>
+<td>CNAMEs can't sit at the apex — use an <strong>Alias record</strong></td>
+</tr>
+<tr>
+<td>"Add a deny rule to the security group"</td>
+<td>Security groups have <strong>no deny rules</strong> (allow-only, stateful) — deny lives in <strong>NACLs</strong></td>
+</tr>
+<tr>
+<td>"Private subnet reaches S3 via NAT Gateway"</td>
+<td>Works but costs money — <strong>Gateway VPC Endpoint</strong> is free and private</td>
+</tr>
+<tr>
+<td>"Run the 20-minute job in Lambda"</td>
+<td>Lambda caps at <strong>15 minutes</strong> — use Fargate/Batch/Step Functions</td>
+</tr>
+<tr>
+<td>"Mount EFS on Windows instances"</td>
+<td>EFS is Linux-only — Windows shared storage = <strong>FSx for Windows File Server</strong></td>
+</tr>
+<tr>
+<td>"Snowball imports directly into Glacier"</td>
+<td>No — Snowball lands in <strong>S3</strong>, then a <strong>lifecycle policy</strong> moves it to Glacier</td>
+</tr>
+<tr>
+<td>"A↔B and B↔C peering lets A reach C"</td>
+<td>Peering is <strong>non-transitive</strong> — need <strong>Transit Gateway</strong> (or direct A↔C peering)</td>
+</tr>
+<tr>
+<td>"Encrypt the existing unencrypted RDS/EBS in place"</td>
+<td>Impossible in place — <strong>snapshot → copy snapshot with encryption → restore</strong></td>
+</tr>
+<tr>
+<td>"KMS for FIPS 140-2 Level 3 / single-tenant keys"</td>
+<td>That's <strong>CloudHSM</strong> (KMS is Level 2*, multi-tenant)</td>
+</tr>
+<tr>
+<td>"Shield Standard stops layer-7 application attacks"</td>
+<td>Standard is L3/L4 only — L7 protection = <strong>WAF / Shield Advanced</strong></td>
+</tr>
+<tr>
+<td>"Apply an SCP to restrict the management account"</td>
+<td>SCPs <strong>never affect the management account</strong></td>
+</tr>
+<tr>
+<td>"Replay DynamoDB Streams data from last month"</td>
+<td>Streams keep <strong>24 hours</strong> — longer retention → <strong>Kinesis Data Streams</strong></td>
+</tr>
+<tr>
+<td>"Give the ALB a static IP"</td>
+<td>ALBs have no static IPs — <strong>NLB</strong> has static/Elastic IPs (or NLB in front of ALB)</td>
+</tr>
+<tr>
+<td>"Add an LSI to the existing DynamoDB table"</td>
+<td><strong>LSIs only at table creation</strong> — after creation, add a <strong>GSI</strong></td>
+</tr>
+<tr>
+<td>"Accelerate UDP traffic with CloudFront"</td>
+<td>CloudFront is HTTP(S) only — UDP/TCP acceleration = <strong>Global Accelerator</strong></td>
+</tr>
+<tr>
+<td>"Parameter Store rotates the DB password automatically"</td>
+<td>No native rotation — automatic rotation = <strong>Secrets Manager</strong></td>
+</tr>
+<tr>
+<td>"One NAT Gateway serves all AZs, highly available"</td>
+<td>AZ failure kills it — deploy <strong>one NAT Gateway per AZ</strong></td>
+</tr>
+<tr>
+<td>"SNS alone guarantees consumers never miss messages"</td>
+<td>SNS doesn't persist for offline consumers — durable fan-out = <strong>SNS → SQS</strong></td>
+</tr>
+<tr>
+<td>"Direct Connect is encrypted because it's private"</td>
+<td><strong>Not encrypted</strong> — run a <strong>VPN over DX</strong> for encryption</td>
+</tr>
+</tbody>
+</table>
+<h2>Must-know combos (the exam's favorite Lego sets)</h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>The combo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Serverless web app</td>
+<td><strong>CloudFront + S3 (static) + API Gateway + Lambda + DynamoDB</strong></td>
+</tr>
+<tr>
+<td>Reliable fan-out</td>
+<td><strong>SNS → multiple SQS queues</strong> (durable, each consumer own queue)</td>
+</tr>
+<tr>
+<td>Global highly available DB</td>
+<td><strong>Aurora Global Database</strong> (SQL) / <strong>DynamoDB Global Tables</strong> (NoSQL)</td>
+</tr>
+<tr>
+<td>Protect a web app</td>
+<td><strong>CloudFront + WAF + Shield + ALB</strong></td>
+</tr>
+<tr>
+<td>Real-time streaming pipeline</td>
+<td><strong>Kinesis Data Streams → Lambda → DynamoDB/S3</strong></td>
+</tr>
+<tr>
+<td>Analytics on data lake</td>
+<td><strong>S3 + Glue (catalog/ETL) + Athena (query) + QuickSight (dashboards)</strong></td>
+</tr>
+<tr>
+<td>Migration toolkit</td>
+<td><strong>DataSync (files) + DMS (databases) + DX/Snow family (transport)</strong></td>
+</tr>
+<tr>
+<td>DR stack</td>
+<td><strong>Route 53 failover + Aurora Global + S3 CRR</strong></td>
+</tr>
+<tr>
+<td>App authentication</td>
+<td><strong>Cognito User Pools (login) + Identity Pools (AWS credentials)</strong></td>
+</tr>
+</tbody>
+</table>
+<h2>Exam technique (the meta-game)</h2>
+<ul>
+<li><strong>Read the last sentence first</strong> — that's where the actual question and qualifier live; the story above it is scenery.</li>
+<li><strong>Eliminate two</strong> — almost every question has two obviously wrong answers. Kill them, then compare the survivors.</li>
+<li><strong>The qualifier decides</strong> between two working answers: <strong>cost</strong> → cheapest that still works; <strong>least operational overhead</strong> → most managed/serverless; <strong>highly available</strong> → Multi-AZ; <strong>survive region failure</strong> → multi-region.</li>
+<li><strong>~2 minutes per question</strong> (130 min, 65 questions). Stuck at 90 seconds? <strong>Flag it and move on</strong> — later questions often jog your memory.</li>
+<li><strong>Answer everything.</strong> No penalty for wrong answers; a guess beats a blank.</li>
+</ul>
+<h2>Question patterns</h2>
+<blockquote>
+<p><em>"Route example.com (apex) to an ALB"</em> → <strong>Alias record</strong> (CNAME illegal at apex)</p>
+<p><em>"Block a specific malicious IP address"</em> → <strong>NACL deny rule</strong> (security groups can't deny)</p>
+<p><em>"Private subnet needs S3 access at no cost"</em> → <strong>Gateway VPC Endpoint</strong> (NAT Gateway is the paid decoy)</p>
+<p><em>"Encrypt an existing unencrypted RDS instance"</em> → <strong>Snapshot → encrypted copy → restore</strong> ("enable encryption" checkbox doesn't exist)</p>
+<p><em>"Fan out orders to inventory, billing, shipping — none may be lost"</em> → <strong>SNS topic → three SQS queues</strong> (durability per consumer)</p>
+<p><em>"Static IPs required by the firewall team for the load balancer"</em> → <strong>Network Load Balancer</strong> (ALB has none)</p>
+<p><em>"Improve performance AND static IPs for global TCP/UDP app"</em> → <strong>Global Accelerator</strong> (CloudFront can't do UDP)</p>
+<p><em>"Rotate database credentials automatically every 30 days"</em> → <strong>Secrets Manager</strong> (Parameter Store is the decoy)</p>
+</blockquote>
+<h2>Pocket card</h2>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Apex domain</td>
+<td>Alias record</td>
+</tr>
+<tr>
+<td>Deny traffic</td>
+<td>NACL (never SG)</td>
+</tr>
+<tr>
+<td>Free S3 access from VPC</td>
+<td>Gateway Endpoint</td>
+</tr>
+<tr>
+<td>&gt;15 minutes</td>
+<td>Not Lambda (Fargate/Batch)</td>
+</tr>
+<tr>
+<td>Windows file share</td>
+<td>FSx for Windows</td>
+</tr>
+<tr>
+<td>Transitive routing</td>
+<td>Transit Gateway</td>
+</tr>
+<tr>
+<td>Encrypt existing volume/DB</td>
+<td>Snapshot dance</td>
+</tr>
+<tr>
+<td>FIPS Level 3</td>
+<td>CloudHSM</td>
+</tr>
+<tr>
+<td>Static IP load balancer</td>
+<td>NLB</td>
+</tr>
+<tr>
+<td>UDP acceleration</td>
+<td>Global Accelerator</td>
+</tr>
+<tr>
+<td>Auto-rotation</td>
+<td>Secrets Manager</td>
+</tr>
+<tr>
+<td>HA NAT</td>
+<td>One per AZ</td>
+</tr>
+<tr>
+<td>Durable fan-out</td>
+<td>SNS → SQS</td>
+</tr>
+<tr>
+<td>Encrypted DX</td>
+<td>VPN over DX</td>
+</tr>
+</tbody>
+</table>
+<p>Traps mapped, combos memorized — one last sweep remains: the small-but-tested gap-fill services that each show up for one or two easy points.</p></section><section id="rules"><h1>SAA-C03 — 6-Day Crash Revision</h1>
+<p>Assumes you have already read the guides once. Goal: <strong>recall + decision speed</strong>, not new learning.
+Daily budget: ~4–5 h (adjust). Method for every topic: <strong>read the Pocket card → cover the answer column → self-test → open the full guide only for rows you miss.</strong></p>
+<p>Files:
+- <a href="#">01-Daily-Plan.md</a> — day-by-day schedule
+- <a href="#">02-All-Pocket-Cards.md</a> — every pocket card in one file
+- <a href="#">03-Top-Decision-Pairs.md</a> — "X vs Y" cheat sheet (most-tested)
+- Full trap list: <a href="#">../topic-guides/36-Exam-Traps-KeyPatterns.md</a></p>
+<h2>Rules for the final 6 days</h2>
+<ol>
+<li>Do <strong>timed practice questions</strong> every day (65 questions / 130 min ≈ 2 min each). Review every wrong answer by asking <em>which keyword did I miss?</em></li>
+<li>Keep a "<strong>my mistakes</strong>" list; re-read it each morning.</li>
+<li>Stop studying new material the evening before the exam. Sleep &gt; cramming.</li>
+<li>Exam technique: read the <strong>last sentence first</strong>, eliminate two, let the qualifier (cost / least overhead / HA / multi-region) decide, flag at 90 s, never leave blanks.</li>
+</ol></section></main>
+<script>
+const S=[...document.querySelectorAll('section')],B=[...document.querySelectorAll('nav button')];
+function show(i){S.forEach((s,k)=>s.classList.toggle('on',k==i));B.forEach((b,k)=>b.classList.toggle('on',k==i));localStorage.t=i;scrollTo(0,0)}
+B.forEach((b,i)=>b.onclick=()=>show(i));show(+localStorage.t||0);
+document.querySelectorAll('#plan li').forEach((li,n)=>{const c=document.createElement('input');c.type='checkbox';const k='c'+n;c.checked=localStorage[k]=='1';c.onchange=()=>localStorage[k]=c.checked?'1':'0';li.prepend(c)});
+q.oninput=()=>{const v=q.value.toLowerCase();document.querySelectorAll('tbody tr').forEach(r=>r.classList.toggle('hide',v&&!r.textContent.toLowerCase().includes(v)))};
+</script></body></html>
